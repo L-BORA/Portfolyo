@@ -13,10 +13,10 @@
     <style>
       /* ===== Renkler: sadece siyah, beyaz ve griler ===== */
       :root {
-        --bg: #f4f3f0;
-        --ink: #111111;
-        --muted: #7a7a76;
-        --line: #d9d8d3;
+        --bg: #000000;
+        --ink: #ecebe6;
+        --muted: #9d9d98;
+        --line: #33353a;
         --serif: "Instrument Serif", Georgia, serif;
         --sans: "Manrope", system-ui, sans-serif;
         --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -299,7 +299,7 @@
         flex: 1;
         touch-action: pan-y;
         overflow: hidden;
-        padding: 2rem 0;
+        padding: 4rem 0;
       }
 
       .track {
@@ -308,19 +308,82 @@
         transition: transform 0.8s var(--ease);
       }
 
+      /* Kart çerçevesindeki çizginin açısı (animasyonla dönebilsin diye) */
+      @property --a {
+        syntax: "<angle>";
+        inherits: false;
+        initial-value: 0deg;
+      }
+
       .card {
         flex: 0 0 auto;
-        background: var(--bg);
-        border-top: 1px solid var(--ink);
-        padding-top: 2rem;
         position: relative;
         z-index: 1;
+        display: flex;
+        flex-direction: column;
+        height: 520px;
+        padding: 2.2rem 2rem 2rem;
+        background: var(--bg);
         opacity: 0.3;
         transform: scale(0.85);
         cursor: pointer;
         transition:
           opacity 0.6s var(--ease),
           transform 0.8s var(--ease);
+      }
+
+      /* Sabit ince çerçeve */
+      .card::after {
+        content: "";
+        position: absolute;
+        inset: -14px;
+        border: 1px solid rgba(236, 235, 230, 0.22);
+        pointer-events: none;
+      }
+
+      /* Çerçevenin etrafını dolaşan parlak çizgi: hızlanır, yavaşlar */
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: -14px;
+        padding: 1.5px;
+        background: conic-gradient(
+          from var(--a),
+          transparent 0deg,
+          var(--ink) 60deg,
+          transparent 130deg,
+          transparent 180deg,
+          var(--ink) 240deg,
+          transparent 310deg,
+          transparent 360deg
+        );
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask:
+          linear-gradient(#000 0 0) content-box exclude,
+          linear-gradient(#000 0 0);
+        pointer-events: none;
+        animation: orbit 7s ease-in-out infinite;
+      }
+
+      @keyframes orbit {
+        0% {
+          --a: 0deg;
+        }
+        25% {
+          --a: 120deg;
+        }
+        50% {
+          --a: 300deg;
+        }
+        75% {
+          --a: 420deg;
+        }
+        100% {
+          --a: 720deg;
+        }
       }
 
       .card.active {
@@ -330,25 +393,35 @@
         cursor: default;
       }
 
+      /* İçerik: tüm kartlarda aynı ölçü ve aralıklar */
       .card h3 {
         font-family: var(--serif);
         font-weight: 400;
-        font-size: clamp(1.8rem, 3.5vw, 3rem);
+        font-size: clamp(1.6rem, 2.6vw, 2.3rem);
         line-height: 1.1;
       }
 
       .card p {
         color: var(--muted);
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+        line-height: 1.6;
         margin-top: 1rem;
       }
 
       .card .tags {
         margin-top: 1.2rem;
+        margin-bottom: 1.6rem;
+        gap: 0.5rem;
+        font-size: 0.75rem;
       }
 
       .card .demo-btn {
-        margin-top: 1.8rem;
+        display: block;
+        margin-top: auto;
+        padding: 0.9rem 0.6rem;
+        font-size: 0.8rem;
+        text-align: center;
+        white-space: nowrap;
       }
 
       .arrow {
@@ -621,6 +694,33 @@
         outline: 1px solid var(--ink);
         outline-offset: 4px;
       }
+      /* Telefon: kart daha kompakt, aktif kart büyütülmez */
+      @media (max-width: 720px) {
+        .card {
+          height: 470px;
+          padding: 1.6rem 1.3rem 1.4rem;
+        }
+        .card.active {
+          transform: scale(1);
+        }
+        .card h3 {
+          font-size: 1.6rem;
+        }
+        .card p {
+          font-size: 0.85rem;
+          line-height: 1.5;
+          margin-top: 0.7rem;
+        }
+        .card .tags {
+          margin-top: 0.9rem;
+          margin-bottom: 1.1rem;
+          font-size: 0.7rem;
+        }
+        .card .demo-btn {
+          padding: 0.8rem 0.5rem;
+          font-size: 0.75rem;
+        }
+      }
     </style>
   </head>
   <body>
@@ -843,7 +943,7 @@
       // Ekran genişliğine göre kart boyutlarını ve kaydırmayı hesapla
       function layout() {
         const vw = viewport.clientWidth;
-        const ratio = vw < 720 ? 0.78 : 0.3; // mobilde tek kart, masaüstünde üç kart
+        const ratio = vw < 720 ? 0.74 : 0.3; // mobilde tek kart, masaüstünde üç kart
         const cw = vw * ratio;
         const gap = vw * 0.04;
         track.style.gap = gap + "px";
@@ -945,139 +1045,98 @@
         .join("<br>");
 
       /* ===== 5. Arka plan noktaları: fare yaklaşınca itilirler ===== */
+      // ===== Yerçekimi alanı arka planı =====
+      // Her çizgi, o noktadaki çekim kuvvetinin yönünü gösterir.
+      // Fare ve arka plandaki görünmez gezegenler kütle gibi davranır.
+      // ===== Yerçekimi alanı arka planı =====
+      // Her çizgi, o noktadaki iki görünmez kütlenin çekim yönünü gösterir.
+      // Fare ve dokunma bu alanı etkilemez.
       const canvas = document.getElementById("dots");
       const ctx = canvas.getContext("2d");
-      let width,
-        height,
-        dots = [];
-      let sizeScale = 1; // ekran boyutuna göre nokta ölçeği
-      const ripples = [];
-      const mouse = { x: -9999, y: -9999 };
-      const GAP = 28;
-      const REACH = 120; // fare etki yarıçapı
-      const FADE = 0.03; // fare izinin ne kadar yavaş söneceği
+      const INK = "236, 235, 230"; // --ink rengiyle aynı tutulmalı
+      let width, height, spacingPx;
+      let nodes = [];
+      const field = { fx: 0, fy: 0, s: 0 };
+
+      // Ekrandaki iki kütle (oranla konumlanır, yavaşça dolaşır)
+      const planets = [
+        { fx: 0.3, fy: 0.4, mass: 3000, phase: 0 },
+        { fx: 0.72, fy: 0.62, mass: 2200, phase: 2.5 },
+      ];
+
+      function planetPos(p, t) {
+        return {
+          x: (p.fx + Math.sin(t * 0.15 + p.phase) * 0.1) * width,
+          y: (p.fy + Math.cos(t * 0.11 + p.phase) * 0.1) * height,
+        };
+      }
 
       function resize() {
         width = canvas.width = window.innerWidth;
         height = canvas.height = window.innerHeight;
-        // Ekran küçüldükçe noktalar orantılı olarak küçülür (en az %50, en fazla %100)
-        sizeScale = Math.min(1, Math.max(0.5, width / 1440));
-        dots = [];
-        for (let x = GAP / 2; x < width; x += GAP) {
-          for (let y = GAP / 2; y < height; y += GAP) {
-            dots.push({ x, y, baseX: x, baseY: y, energy: 0 });
+        // Küçük ekranda çizgiler daha sık
+        spacingPx = width < 720 ? 22 : width < 1200 ? 26 : 30;
+        nodes = [];
+        for (let x = spacingPx / 2; x < width + spacingPx; x += spacingPx) {
+          for (let y = spacingPx / 2; y < height + spacingPx; y += spacingPx) {
+            nodes.push({ x, y });
           }
         }
       }
 
-      window.addEventListener("resize", resize);
-
-      window.addEventListener("mousemove", (e) => {
-        mouse.x = e.clientX;
-        mouse.y = e.clientY;
-      });
-
-      // Telefonda parmak hareketi fare izi gibi çalışsın
-      window.addEventListener(
-        "touchmove",
-        (e) => {
-          mouse.x = e.touches[0].clientX;
-          mouse.y = e.touches[0].clientY;
-        },
-        { passive: true },
-      );
-
-      // Parmak kalkınca iz yavaşça sönsün
-      window.addEventListener("touchend", () => {
-        mouse.x = -9999;
-        mouse.y = -9999;
-      });
-
-      // Tıklayınca noktalardan yayılan bir dalga başlat
-      window.addEventListener("click", (e) => {
-        ripples.push({ x: e.clientX, y: e.clientY, r: 0, life: 1 });
-      });
-
-      // Fare ekrandan çıkınca iz ve dalgalar hemen kaybolsun
-      document.addEventListener("mouseout", (e) => {
-        if (e.relatedTarget === null) {
-          mouse.x = -9999;
-          mouse.y = -9999;
-          ripples.length = 0;
-          dots.forEach((d) => {
-            d.energy = 0;
-          });
+      // Bir noktadaki toplam çekim vektörü
+      function fieldAt(px, py, t, out) {
+        let fx = 0;
+        let fy = 0;
+        for (const p of planets) {
+          const pos = planetPos(p, t);
+          const dx = pos.x - px;
+          const dy = pos.y - py;
+          const r2 = dx * dx + dy * dy + 900; // yumuşatma
+          const r = Math.sqrt(r2);
+          const f = p.mass / r2;
+          fx += (dx / r) * f;
+          fy += (dy / r) * f;
         }
-      });
+        out.fx = fx;
+        out.fy = fy;
+        out.s = Math.sqrt(fx * fx + fy * fy);
+        return out;
+      }
 
       function draw() {
+        const t = performance.now() / 1000;
         ctx.clearRect(0, 0, width, height);
 
-        // Dalgaları güncelle ve çiz
-        for (let i = ripples.length - 1; i >= 0; i--) {
-          const rp = ripples[i];
-          rp.r += 6;
-          rp.life -= 0.018;
-          if (rp.life <= 0) {
-            ripples.splice(i, 1);
-            continue;
-          }
+        // Alan çizgileri
+        const L = spacingPx * 0.8;
+        ctx.lineWidth = 1;
+        for (const n of nodes) {
+          fieldAt(n.x, n.y, t, field);
+          if (field.s < 0.0004) continue;
+          const ux = field.fx / field.s;
+          const uy = field.fy / field.s;
+          const alpha = Math.min(0.8, 0.05 + field.s * 2);
+          ctx.strokeStyle = `rgba(${INK}, ${alpha})`;
           ctx.beginPath();
-          ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(17, 17, 17, ${rp.life * 0.15})`;
-          ctx.lineWidth = 1;
+          ctx.moveTo(n.x - (ux * L) / 2, n.y - (uy * L) / 2);
+          ctx.lineTo(n.x + (ux * L) / 2, n.y + (uy * L) / 2);
           ctx.stroke();
         }
 
-        dots.forEach((d) => {
-          const dx = d.baseX - mouse.x;
-          const dy = d.baseY - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          // 1. Fare izi: fare yakınken enerji dolar, uzaklaşınca yavaşça söner
-          let proximity = 0;
-          if (dist < REACH) {
-            proximity = (REACH - dist) / REACH;
-            d.energy = 1;
-          } else {
-            d.energy = Math.max(0, d.energy - FADE);
-          }
-
-          // Dalga halkası geçerken de noktalar enerji alır
-          ripples.forEach((rp) => {
-            const rdx = d.baseX - rp.x;
-            const rdy = d.baseY - rp.y;
-            const rdist = Math.sqrt(rdx * rdx + rdy * rdy);
-            if (Math.abs(rdist - rp.r) < 14) {
-              d.energy = Math.max(d.energy, rp.life);
-            }
-          });
-
-          // Fareye yakın noktalar itilir
-          if (dist < REACH && dist > 0) {
-            const force = proximity;
-            d.x = d.baseX + (dx / dist) * force * 18;
-            d.y = d.baseY + (dy / dist) * force * 18;
-          } else {
-            d.x += (d.baseX - d.x) * 0.1;
-            d.y += (d.baseY - d.y) * 0.1;
-          }
-
-          // 2. Boyut: fareye yakın ve enerjili noktalar büyür
-          // Maksimum boyut biraz küçültüldü ve ekran ölçeğiyle çarpılıyor
-          // Küçük ekranda noktalar en az 1px kalsın ve taban opaklığı yükselsin
-          const radius = Math.max(1, (1.1 + proximity * 1.2 + d.energy * 0.4) * sizeScale);
-          const baseAlpha = 0.18 + (1 - sizeScale) * 0.4;
-          const alpha = Math.min(0.9, baseAlpha + d.energy * 0.5 + proximity * 0.2);
-
+        // İki kütlenin küçük noktaları
+        ctx.fillStyle = `rgba(${INK}, 0.6)`;
+        for (const p of planets) {
+          const pos = planetPos(p, t);
           ctx.beginPath();
-          ctx.arc(d.x, d.y, radius, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(17, 17, 17, ${alpha})`;
+          ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
           ctx.fill();
-        });
+        }
 
         requestAnimationFrame(draw);
       }
+
+      window.addEventListener("resize", resize);
 
       resize();
       draw();
