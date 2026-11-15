@@ -1065,8 +1065,10 @@
 
           // 2. Boyut: fareye yakın ve enerjili noktalar büyür
           // Maksimum boyut biraz küçültüldü ve ekran ölçeğiyle çarpılıyor
-          const radius = (1.1 + proximity * 1.2 + d.energy * 0.4) * sizeScale;
-          const alpha = Math.min(0.9, 0.18 + d.energy * 0.5 + proximity * 0.2);
+          // Küçük ekranda noktalar en az 1px kalsın ve taban opaklığı yükselsin
+          const radius = Math.max(1, (1.1 + proximity * 1.2 + d.energy * 0.4) * sizeScale);
+          const baseAlpha = 0.18 + (1 - sizeScale) * 0.4;
+          const alpha = Math.min(0.9, baseAlpha + d.energy * 0.5 + proximity * 0.2);
 
           ctx.beginPath();
           ctx.arc(d.x, d.y, radius, 0, Math.PI * 2);
