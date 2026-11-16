@@ -13,9 +13,9 @@
     <style>
       /* ===== Renkler: sadece siyah, beyaz ve griler ===== */
       :root {
-        --bg: #000000;
+        --bg: #0d0e10;
         --ink: #ecebe6;
-        --muted: #9d9d98;
+        --muted: #8a8a85;
         --line: #33353a;
         --serif: "Instrument Serif", Georgia, serif;
         --sans: "Manrope", system-ui, sans-serif;
@@ -529,7 +529,7 @@
         .all-grid {
           grid-template-columns: 1fr;
         }
-        .card:not(.active) {
+        .card:not(.active):not(.static) {
           opacity: 0;
           pointer-events: none;
         }
@@ -694,7 +694,7 @@
         outline: 1px solid var(--ink);
         outline-offset: 4px;
       }
-      /* Telefon: kart daha kompakt, aktif kart büyütülmez */
+          /* Telefon: kart daha kompakt, aktif kart büyütülmez */
       @media (max-width: 720px) {
         .card {
           height: 470px;
@@ -1045,10 +1045,10 @@
         .join("<br>");
 
       /* ===== 5. Arka plan noktaları: fare yaklaşınca itilirler ===== */
-      // ===== Yerçekimi alanı arka planı =====
+            // ===== Yerçekimi alanı arka planı =====
       // Her çizgi, o noktadaki çekim kuvvetinin yönünü gösterir.
       // Fare ve arka plandaki görünmez gezegenler kütle gibi davranır.
-      // ===== Yerçekimi alanı arka planı =====
+            // ===== Yerçekimi alanı arka planı =====
       // Her çizgi, o noktadaki iki görünmez kütlenin çekim yönünü gösterir.
       // Fare ve dokunma bu alanı etkilemez.
       const canvas = document.getElementById("dots");
