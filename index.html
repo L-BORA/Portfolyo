@@ -487,6 +487,7 @@
         inset: 0;
         z-index: 100;
         background: var(--bg);
+        overflow-x: hidden;
         overflow-y: auto;
         padding: 6vh 8vw;
         opacity: 0;
@@ -510,11 +511,14 @@
 
       .all-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 3rem 2vw;
       }
 
       .card.static {
+        width: auto;
+        height: auto;
+        min-height: 420px;
         opacity: 1;
         transform: none;
         cursor: default;
@@ -522,7 +526,7 @@
 
       @media (max-width: 900px) {
         .all-grid {
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
 
@@ -695,7 +699,7 @@
         outline: 1px solid var(--ink);
         outline-offset: 4px;
       }
-          /* Telefon: kart daha kompakt, aktif kart büyütülmez */
+      /* Telefon: kart daha kompakt, aktif kart büyütülmez */
       @media (max-width: 720px) {
         /* Oklar kartın yanına değil, karuselin üstüne oturur: kart tam genişlikte kalır */
         .carousel {
@@ -868,7 +872,7 @@
 
     <footer>
       <span>© 2026 Latif Can BORA</span>
-      
+      <span>GitHub: <a href="https://github.com/L-BORA">L-BORA</a></span>
     </footer>
 
     <script>
@@ -1067,10 +1071,10 @@
         .join("<br>");
 
       /* ===== 5. Arka plan noktaları: fare yaklaşınca itilirler ===== */
-            // ===== Yerçekimi alanı arka planı =====
+      // ===== Yerçekimi alanı arka planı =====
       // Her çizgi, o noktadaki çekim kuvvetinin yönünü gösterir.
       // Fare ve arka plandaki görünmez gezegenler kütle gibi davranır.
-            // ===== Yerçekimi alanı arka planı =====
+      // ===== Yerçekimi alanı arka planı =====
       // Her çizgi, o noktadaki iki görünmez kütlenin çekim yönünü gösterir.
       // Fare ve dokunma bu alanı etkilemez.
       const canvas = document.getElementById("dots");
