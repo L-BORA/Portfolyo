@@ -699,23 +699,24 @@
       .pk.on{border-color:var(--text)}
 
       /* ===== CÜZDANIM KİMLİĞİ: lacivert kumaş, kehribar dikiş ===== */
-      #app,dialog{--bg:#0c1824;--card:#132233;--card-hover:#1a2d42;--border:#243a52;--input:#0c1824;--text:#f1ede4;--muted:#8ea3b8;--accent:#ffb627;--accent-soft:#ffd27a;--green:#4fd1a5;--red:#ff7a6b;--yellow:#ffd166;font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-      body.app-on{background:#0c1824}
+      /* temalar: varsayılan Kehribar, body[data-theme] ile değişir */
+      #app,dialog{--bg:#141210;--card:#1d1a17;--card-hover:#272320;--border:#35302a;--input:#141210;--text:#f3eee6;--muted:#a39a8d;--accent:#ffb627;--accent-soft:#ffd27a;--green:#5fd8a8;--red:#ff7a6b;--yellow:#ffd166;--stitch:rgba(255,182,39,.4);--glow:rgba(255,182,39,.25);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+      body[data-theme="navy"] #app,body[data-theme="navy"] dialog{--bg:#0c1824;--card:#132233;--card-hover:#1a2d42;--border:#243a52;--input:#0c1824;--text:#f1ede4;--muted:#8ea3b8;--green:#4fd1a5}
+      body[data-theme="premium"] #app,body[data-theme="premium"] dialog{--bg:#06120e;--card:#0d1f19;--card-hover:#142b23;--border:#2a4a3f;--input:#06120e;--text:#f5efdf;--muted:#8fa89c;--accent:#d8b45f;--accent-soft:#f0d99a;--green:#6fe0b0;--red:#f28b82;--yellow:#e9c46a;--stitch:rgba(216,180,95,.5);--glow:rgba(216,180,95,.3)}
+      body.app-on{background:#141210}
+      body.app-on[data-theme="navy"]{background:#0c1824}
+      body.app-on[data-theme="premium"]{background:#06120e}
       #app{background:var(--bg);color:var(--text)}
-      #app .btn:hover,dialog .btn:hover{box-shadow:0 8px 20px rgba(255,182,39,.25)}
+      #app .btn:hover,dialog .btn:hover{box-shadow:0 8px 20px var(--glow)}
       #app .btn-ghost:hover,dialog .btn-ghost:hover{box-shadow:none}
       .btn-danger.armed{background:var(--green);border-color:var(--green);color:#04130c}
-      #app .app-top{align-self:center;width:calc(100% - 28px);max-width:928px;margin:calc(10px + env(safe-area-inset-top)) 0 6px;padding:20px 24px;text-align:left;border-radius:26px;background:var(--card);border:1px solid var(--border);outline:1.5px dashed rgba(255,182,39,.4);outline-offset:-9px}
-      #app .top-right{top:12px;right:12px}
+      #app .app-top{align-self:center;width:calc(100% - 28px);max-width:928px;margin:calc(10px + env(safe-area-inset-top)) 0 6px;padding:20px 24px;text-align:left;border-radius:26px;background:var(--card);border:1px solid var(--border);outline:1.5px dashed var(--stitch);outline-offset:-9px}
       #app .bal-label{justify-content:flex-start;font-size:.9rem}
       #app .bal{font-size:clamp(2.1rem,8vw,3rem);font-weight:700;letter-spacing:-.025em;color:var(--accent-soft)}
       .chip{display:inline-block;margin-top:6px;padding:3px 12px;border-radius:999px;background:var(--bg);font-size:.8rem;color:var(--muted)}
       .chip b{color:var(--text);font-weight:600}
       #app .monthbar{align-self:center;width:max-content;max-width:100%;padding:2px 6px;margin:4px 0;background:var(--card);border:1px solid var(--border);border-radius:999px}
       #app .monthbar .lbl{font-weight:600}
-      #app .seg{border-radius:999px;background:var(--card)}
-      #app .seg button{border-radius:999px}
-      #app .seg button.on{background:var(--bg)}
       .tile{border-radius:14px;background:var(--card)}
       .tile.cat{flex-direction:column;align-items:flex-start;gap:10px;min-height:104px;padding:14px 14px 14px 16px;border-left:4px solid var(--c)}
       .tile.cat .ico{width:38px;height:38px;border-radius:10px;font-size:1.15rem;background:color-mix(in srgb,var(--c) 20%,transparent)!important}
@@ -739,6 +740,24 @@
       .pbox{border-color:var(--accent)}
       .amount{font-size:2.4rem;font-weight:700;letter-spacing:-.02em}
       .key{border-radius:14px;background:var(--bg)}
+      #app .top-right{top:14px;right:18px;display:flex;align-items:center;gap:8px}
+      .themes{display:inline-flex;gap:6px;padding:0 4px}
+      .sw{width:24px;height:24px;padding:0;border-radius:50%;border:2px solid transparent;background:linear-gradient(135deg,var(--sb) 50%,var(--sa) 50%);box-shadow:0 0 0 1px var(--border)}
+      .sw.on{border-color:var(--text)}
+      .tbtn{display:inline-flex;align-items:center;gap:6px;height:32px;min-width:32px;padding:0 9px;justify-content:center;background:var(--bg);border:1px solid var(--border);border-radius:999px;color:var(--text);font-size:.85rem}
+      .tbtn:hover{border-color:var(--accent)}
+      @media(max-width:519px){#userName,.tbtn span{display:none}}
+      #app .seg{gap:10px;padding:0;background:none;border-radius:0}
+      #app .seg button{--k:var(--red);text-align:left;padding:10px 14px;border-radius:14px;background:transparent;border:1.5px dashed var(--border);color:var(--muted)}
+      #app .seg button#segInc{--k:var(--green)}
+      #app .seg button span{display:flex;align-items:center;gap:7px}
+      #app .seg button span::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--k);opacity:.45}
+      #app .seg button.on{background:color-mix(in srgb,var(--k) 13%,var(--card));border:1.5px solid var(--k);color:var(--text)}
+      #app .seg button.on span::before{opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--k) 30%,transparent)}
+      /* Premium: zümrüt siyahı + şampanya altını */
+      body[data-theme="premium"] #app .app-top{background:linear-gradient(135deg,#143a30 0%,#0d1f19 52%,#1b2b20 100%);border-color:#3b5d4f}
+      body[data-theme="premium"] #app .bal{background:linear-gradient(180deg,#fbeec2 0%,#d8b45f 55%,#b08a35 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+      body[data-theme="premium"] #app .bottom-nav button.on,body[data-theme="premium"] #app .btn,body[data-theme="premium"] dialog .btn,body[data-theme="premium"] .key.ok{background:linear-gradient(180deg,#f0d99a,#d8b45f);color:#1b1503}
     </style>
   </head>
   <body>
@@ -851,12 +870,14 @@
     <div id="app" class="hidden">
       <div class="app-top">
         <div class="top-right">
-          <button class="icon-btn" id="menuBtn" aria-label="Menü">⋮</button>
-          <div class="menu hidden" id="menu">
-            <span class="muted" id="userName"></span>
-            <button data-home>Ana Sayfa</button>
-            <button id="logoutBtn">Çıkış Yap</button>
-          </div>
+          <span id="userName"></span>
+          <span class="themes" role="group" aria-label="Tema">
+            <button class="sw" data-theme="amber" title="Kehribar" aria-label="Kehribar tema" style="--sa:#ffb627;--sb:#141210"></button>
+            <button class="sw" data-theme="navy" title="Lacivert" aria-label="Lacivert tema" style="--sa:#ffb627;--sb:#0c1824"></button>
+            <button class="sw" data-theme="premium" title="Premium" aria-label="Premium tema" style="--sa:#d8b45f;--sb:#06120e"></button>
+          </span>
+          <button class="tbtn" data-home title="Ana sayfa" aria-label="Ana sayfa">🏠<span>Ana sayfa</span></button>
+          <button class="tbtn" id="logoutBtn" title="Çıkış yap" aria-label="Çıkış yap">🚪<span>Çıkış</span></button>
         </div>
         <div class="bal-label">Genel denge</div>
         <div class="bal" data-sum="bal">0</div>
@@ -1485,8 +1506,6 @@
       document.querySelectorAll("[data-open-app]").forEach((b) => b.addEventListener("click", openApp));
       document.querySelectorAll("[data-home]").forEach((b) => b.addEventListener("click", goHome));
       document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => b.closest("dialog").close()));
-      $("menuBtn").onclick = (e) => { e.stopPropagation(); $("menu").classList.toggle("hidden"); };
-      document.addEventListener("click", () => $("menu").classList.add("hidden"));
       document.querySelectorAll(".bottom-nav button").forEach((b) => (b.onclick = () => setTab(b.dataset.tab)));
       $("prevM").onclick = () => shiftMonth(-1);
       $("nextM").onclick = () => shiftMonth(1);
@@ -1720,7 +1739,7 @@
               {
                 data: values,
                 backgroundColor: colors,
-                borderColor: "#0c1824",
+                borderColor: bgColor(),
                 borderWidth: 2,
                 hoverOffset: 16,
               },
@@ -1829,6 +1848,21 @@
         saveState();
         render();
       }
+
+      // ---------- TEMA ----------
+      const THEMES = ["amber", "navy", "premium"];
+      const bgColor = () => getComputedStyle($("app")).getPropertyValue("--bg").trim() || "#141210";
+      function setTheme(t) {
+        if (!THEMES.includes(t)) t = "amber";
+        document.body.dataset.theme = t;
+        document.querySelectorAll(".sw").forEach((b) => b.classList.toggle("on", b.dataset.theme === t));
+        try { localStorage.setItem("theme", t); } catch {}
+        if (tab === "stats" && !$("app").classList.contains("hidden")) renderCharts();
+      }
+      document.querySelectorAll(".sw").forEach((b) => (b.onclick = () => setTheme(b.dataset.theme)));
+      let savedTheme = "amber";
+      try { savedTheme = localStorage.getItem("theme") || "amber"; } catch {}
+      setTheme(savedTheme);
 
       toggleCreditDates();
       setTab("categories");
