@@ -742,8 +742,8 @@
       .key{border-radius:14px;background:var(--bg)}
       #app .top-right{top:14px;right:18px;display:flex;align-items:center;gap:8px}
       .themes{display:inline-flex;gap:6px;padding:0 4px}
-      .sw{width:24px;height:24px;padding:0;border-radius:50%;border:2px solid transparent;background:linear-gradient(135deg,var(--sb) 50%,var(--sa) 50%);box-shadow:0 0 0 1px var(--border)}
-      .sw.on{border-color:var(--text)}
+      .sw{width:30px;height:30px;padding:0;border-radius:50%;border:2px solid transparent;background:linear-gradient(135deg,var(--sb) 50%,var(--sa) 50%);box-shadow:0 0 0 1px var(--border)}
+      .sw.on{border-color:var(--text);box-shadow:0 0 0 3px color-mix(in srgb,var(--text) 28%,transparent)}
       .tbtn{display:inline-flex;align-items:center;gap:6px;height:32px;min-width:32px;padding:0 9px;justify-content:center;background:var(--bg);border:1px solid var(--border);border-radius:999px;color:var(--text);font-size:.85rem}
       .tbtn:hover{border-color:var(--accent)}
       @media(max-width:519px){#userName,.tbtn span{display:none}}
@@ -758,6 +758,12 @@
       body[data-theme="premium"] #app .app-top{background:linear-gradient(135deg,#143a30 0%,#0d1f19 52%,#1b2b20 100%);border-color:#3b5d4f}
       body[data-theme="premium"] #app .bal{background:linear-gradient(180deg,#fbeec2 0%,#d8b45f 55%,#b08a35 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
       body[data-theme="premium"] #app .bottom-nav button.on,body[data-theme="premium"] #app .btn,body[data-theme="premium"] dialog .btn,body[data-theme="premium"] .key.ok{background:linear-gradient(180deg,#f0d99a,#d8b45f);color:#1b1503}
+      @media(max-width:519px){
+        .grid{grid-template-columns:1fr 1fr;gap:8px}
+        .grid:has(.acct){grid-template-columns:1fr}
+        .tile.cat{padding:12px 10px 12px 14px;min-height:96px}
+        .tile.cat .t>span{font-size:.92rem}
+      }
     </style>
   </head>
   <body>
@@ -872,9 +878,9 @@
         <div class="top-right">
           <span id="userName"></span>
           <span class="themes" role="group" aria-label="Tema">
-            <button class="sw" data-theme="amber" title="Kehribar" aria-label="Kehribar tema" style="--sa:#ffb627;--sb:#141210"></button>
-            <button class="sw" data-theme="navy" title="Lacivert" aria-label="Lacivert tema" style="--sa:#ffb627;--sb:#0c1824"></button>
-            <button class="sw" data-theme="premium" title="Premium" aria-label="Premium tema" style="--sa:#d8b45f;--sb:#06120e"></button>
+            <button class="sw" data-theme="amber" title="Kehribar" aria-label="Kehribar tema" style="--sa:#ffb627;--sb:#7a5220"></button>
+            <button class="sw" data-theme="navy" title="Lacivert" aria-label="Lacivert tema" style="--sa:#ffb627;--sb:#2f6fb5"></button>
+            <button class="sw" data-theme="premium" title="Premium" aria-label="Premium tema" style="--sa:#e3c374;--sb:#1f8a67"></button>
           </span>
           <button class="tbtn" data-home title="Ana sayfa" aria-label="Ana sayfa">🏠<span>Ana sayfa</span></button>
           <button class="tbtn" id="logoutBtn" title="Çıkış yap" aria-label="Çıkış yap">🚪<span>Çıkış</span></button>
