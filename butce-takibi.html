@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cüzdanım - Kişisel Bütçe Takibi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&display=swap" rel="stylesheet" />
     <style>
       :root {
         color-scheme: dark;
@@ -695,6 +697,48 @@
       .picker{display:flex;flex-wrap:wrap;gap:6px}
       .pk{width:38px;height:38px;border-radius:10px;border:2px solid transparent;background:var(--bg);font-size:1.2rem}
       .pk.on{border-color:var(--text)}
+
+      /* ===== CÜZDANIM KİMLİĞİ: lacivert kumaş, kehribar dikiş ===== */
+      #app,dialog{--bg:#0c1824;--card:#132233;--card-hover:#1a2d42;--border:#243a52;--input:#0c1824;--text:#f1ede4;--muted:#8ea3b8;--accent:#ffb627;--accent-soft:#ffd27a;--green:#4fd1a5;--red:#ff7a6b;--yellow:#ffd166;font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+      body.app-on{background:#0c1824}
+      #app{background:var(--bg);color:var(--text)}
+      #app .btn:hover,dialog .btn:hover{box-shadow:0 8px 20px rgba(255,182,39,.25)}
+      #app .btn-ghost:hover,dialog .btn-ghost:hover{box-shadow:none}
+      .btn-danger.armed{background:var(--green);border-color:var(--green);color:#04130c}
+      #app .app-top{align-self:center;width:calc(100% - 28px);max-width:928px;margin:calc(10px + env(safe-area-inset-top)) 0 6px;padding:20px 24px;text-align:left;border-radius:26px;background:var(--card);border:1px solid var(--border);outline:1.5px dashed rgba(255,182,39,.4);outline-offset:-9px}
+      #app .top-right{top:12px;right:12px}
+      #app .bal-label{justify-content:flex-start;font-size:.9rem}
+      #app .bal{font-size:clamp(2.1rem,8vw,3rem);font-weight:700;letter-spacing:-.025em;color:var(--accent-soft)}
+      .chip{display:inline-block;margin-top:6px;padding:3px 12px;border-radius:999px;background:var(--bg);font-size:.8rem;color:var(--muted)}
+      .chip b{color:var(--text);font-weight:600}
+      #app .monthbar{align-self:center;width:max-content;max-width:100%;padding:2px 6px;margin:4px 0;background:var(--card);border:1px solid var(--border);border-radius:999px}
+      #app .monthbar .lbl{font-weight:600}
+      #app .seg{border-radius:999px;background:var(--card)}
+      #app .seg button{border-radius:999px}
+      #app .seg button.on{background:var(--bg)}
+      .tile{border-radius:14px;background:var(--card)}
+      .tile.cat{flex-direction:column;align-items:flex-start;gap:10px;min-height:104px;padding:14px 14px 14px 16px;border-left:4px solid var(--c)}
+      .tile.cat .ico{width:38px;height:38px;border-radius:10px;font-size:1.15rem;background:color-mix(in srgb,var(--c) 20%,transparent)!important}
+      .tile.cat .t{width:100%}
+      .tile.cat>.muted{position:absolute;top:10px;right:12px}
+      .tile.cat{position:relative}
+      .tile.cat .t>span{font-size:1.02rem;font-weight:600}
+      .grid:has(.acct){grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+      .tile.acct{flex-direction:column;align-items:stretch;gap:8px;border-left:4px solid var(--c);padding:14px 14px 14px 16px}
+      .acct-top{display:flex;align-items:center;gap:10px}
+      .acct .ico{width:38px;height:38px;border-radius:10px;background:color-mix(in srgb,var(--c) 20%,transparent)}
+      .acct-bal{font-size:1.7rem;font-weight:700;letter-spacing:-.02em;color:var(--c)}
+      .acct-bal small{font-size:.8rem;font-weight:400;color:var(--muted);letter-spacing:0}
+      .acct .bar div{background:var(--c)}
+      #app .bottom-nav{align-self:center;width:min(460px,calc(100% - 24px));margin:6px 0 calc(10px + env(safe-area-inset-bottom));padding:5px;gap:2px;border-radius:22px;background:var(--card);border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,.45)}
+      #app .bottom-nav button{max-width:none;border-radius:18px;padding:7px 2px}
+      #app .bottom-nav button.on{background:var(--accent);color:#1b1203;font-weight:600}
+      @media(min-width:520px){#app .bottom-nav{border-radius:999px}#app .bottom-nav button{flex-direction:row;justify-content:center;gap:6px;border-radius:999px;padding:10px 6px;font-size:.82rem}#app .bottom-nav button span{font-size:1.05rem}}
+      .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+      .sheet-head b{font-size:1.05rem}
+      .pbox{border-color:var(--accent)}
+      .amount{font-size:2.4rem;font-weight:700;letter-spacing:-.02em}
+      .key{border-radius:14px;background:var(--bg)}
     </style>
   </head>
   <body>
@@ -814,11 +858,9 @@
             <button id="logoutBtn">Çıkış Yap</button>
           </div>
         </div>
-        <div class="bal-label">Genel denge <button class="icon-btn sm" id="eyeBtn" aria-label="Bakiyeyi gizle">
-            👁
-          </button></div>
-        <div class="bal private" data-sum="bal">0</div>
-        <div class="muted private">Kullanılabilir kredi limiti: <span data-sum="credit">0</span></div>
+        <div class="bal-label">Genel denge</div>
+        <div class="bal" data-sum="bal">0</div>
+        <div class="chip">Kullanılabilir kredi limiti <b data-sum="credit">0</b></div>
       </div>
 
       <div class="monthbar" id="monthbar">
@@ -889,7 +931,7 @@
     <!-- Kart / Nakit -->
     <dialog id="cardDialog">
       <h2>
-        Kart / Nakit Ekle
+        <span id="cardTitle">Kart / Nakit Ekle</span>
         <button class="close-x" type="button" data-close>&times;</button>
       </h2>
       <form id="cardForm">
@@ -938,6 +980,7 @@
     <!-- Hızlı işlem (kategoriye basınca açılır) -->
     <dialog id="qDialog" class="sheet">
       <div id="qPad">
+        <div class="sheet-head"><b id="sheetTitle">Gider ekle</b><button class="close-x" type="button" data-close aria-label="Kapat">&times;</button></div>
         <div class="datebar">
           <button class="icon-btn" id="dPrev" aria-label="Önceki gün">‹</button>
           <button class="datelbl" id="dLabel"></button>
@@ -1191,8 +1234,6 @@
       let tab = "categories";
       let catType = "expense";
       let editMode = false;
-      let hide = false;
-      try { hide = localStorage.getItem("hide") === "1"; } catch {}
 
       function updateAuthUI() {
         const on = !!currentUser;
@@ -1278,6 +1319,7 @@
       function paintQ() {
         const card = findCard(q.card);
         $("dLabel").textContent = dateLabel(q.date);
+        $("sheetTitle").textContent = q.type === "income" ? "Gelir ekle" : "Gider ekle";
         $("accName").textContent = card ? card.name : "Seç";
         const m = meta(q.type, q.cat);
         $("catLabel").textContent = m.icon + " " + q.cat;
@@ -1301,7 +1343,7 @@
         if (!cards.length) {
           alert(type === "income" ? "Önce bir nakit veya banka hesabı eklemelisin." : "Önce bir hesap eklemelisin.");
           setTab("accounts");
-          $("cardDialog").showModal();
+          openCardDialog(null);
           return;
         }
         let last = null;
@@ -1381,6 +1423,7 @@
       }
 
       function openCatDialog(name) {
+        disarm();
         editing = name;
         pick = name ? meta(catType, name) : { icon: ICONS[0], color: PALETTE[catList(catType).length % PALETTE.length] };
         $("catTitle").textContent = name ? "Kategoriyi düzenle" : "Yeni kategori";
@@ -1392,14 +1435,58 @@
         $("catDialog").showModal();
       }
 
+      // ---------- İKİ ADIMLI SİLME (✕ → ✓) ----------
+      let armed = null;
+      function disarm() {
+        if (armed) { armed.classList.remove("armed"); armed.textContent = armed.dataset.orig; armed = null; }
+      }
+      function armDelete(btn, fn) {
+        if (armed === btn) { disarm(); fn(); return; }
+        disarm();
+        btn.dataset.orig = btn.textContent;
+        btn.textContent = "✓";
+        btn.classList.add("armed");
+        armed = btn;
+      }
+      document.addEventListener("click", (e) => { if (armed && !armed.contains(e.target)) disarm(); }, true);
+
+      // ---------- HESAP DÜZENLE ----------
+      let editingCard = null;
+      function openCardDialog(c) {
+        editingCard = c ? c.id : null;
+        $("cardForm").reset();
+        $("cardTitle").textContent = c ? "Hesabı düzenle" : "Kart / Nakit Ekle";
+        $("cardType").disabled = !!c;
+        if (c) {
+          $("cardName").value = c.name;
+          $("cardType").value = c.type;
+          $("cardAmount").value = c.amount;
+          $("cardStatement").value = c.statementDay || "";
+          $("cardDue").value = c.dueDay || "";
+        }
+        toggleCreditDates();
+        $("cardDialog").showModal();
+      }
+      function saveCardEdit() {
+        const c = findCard(editingCard);
+        editingCard = null;
+        if (!c) return;
+        const a = parseFloat($("cardAmount").value);
+        c.name = $("cardName").value.trim() || c.name;
+        if (!isNaN(a) && a >= 0) c.amount = a;
+        if (c.type === "credit") {
+          c.statementDay = parseInt($("cardStatement").value) || null;
+          c.dueDay = parseInt($("cardDue").value) || null;
+        }
+        update();
+      }
+
       // ---------- OLAYLAR ----------
       document.querySelectorAll("[data-open-app]").forEach((b) => b.addEventListener("click", openApp));
       document.querySelectorAll("[data-home]").forEach((b) => b.addEventListener("click", goHome));
       document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", () => b.closest("dialog").close()));
       $("menuBtn").onclick = (e) => { e.stopPropagation(); $("menu").classList.toggle("hidden"); };
       document.addEventListener("click", () => $("menu").classList.add("hidden"));
-      function paintEye() { document.body.classList.toggle("hide", hide); $("eyeBtn").textContent = hide ? "🙈" : "👁"; }
-      $("eyeBtn").onclick = () => { hide = !hide; try { localStorage.setItem("hide", hide ? "1" : "0"); } catch {} paintEye(); };
       document.querySelectorAll(".bottom-nav button").forEach((b) => (b.onclick = () => setTab(b.dataset.tab)));
       $("prevM").onclick = () => shiftMonth(-1);
       $("nextM").onclick = () => shiftMonth(1);
@@ -1418,17 +1505,18 @@
       });
 
       $("cardList").addEventListener("click", (e) => {
-        if (e.target.closest("[data-add-card]")) return $("cardDialog").showModal();
+        if (e.target.closest("[data-add-card]")) return openCardDialog(null);
+        const ed = e.target.closest("[data-edit-card]");
+        if (ed) return openCardDialog(findCard(ed.dataset.editCard));
         const d = e.target.closest("[data-del-card]");
-        if (d) deleteCard(d.dataset.delCard);
+        if (d) armDelete(d, () => deleteCard(d.dataset.delCard));
       });
 
       $("txList").addEventListener("click", (e) => {
         const d = e.target.closest("[data-del]");
-        if (!d || !confirm("Bu işlem silinsin mi?")) return;
+        if (!d) return;
         const [k, id] = d.dataset.del.split(":");
-        if (k === "income") deleteIncome(id);
-        else deleteExpense(id);
+        armDelete(d, () => (k === "income" ? deleteIncome(id) : deleteExpense(id)));
       });
 
       $("iconPick").addEventListener("click", (e) => { const b = e.target.closest("[data-icon]"); if (b) { pick.icon = b.dataset.icon; paintPick(); } });
@@ -1458,15 +1546,14 @@
         update();
       });
 
-      $("catDel").onclick = () => {
-        if (!confirm("Kategori silinsin mi? Geçmiş işlemlerin silinmez.")) return;
+      $("catDel").onclick = () => armDelete($("catDel"), () => {
         const list = catList(catType);
         list.splice(list.indexOf(editing), 1);
         delete state.categoryMeta[catType + ":" + editing];
         if (catType === "expense") delete state.categoryLimits[editing];
         $("catDialog").close();
         update();
-      };
+      });
 
       // hızlı işlem ekranı
       $("keys").innerHTML = KEYS.map((k) => `<button type="button" class="key${k === "✓" ? " ok" : ""}" data-k="${k}">${k}</button>`).join("");
@@ -1514,6 +1601,7 @@
 
       $("cardForm").addEventListener("submit", (e) => {
         e.preventDefault();
+        if (editingCard) { saveCardEdit(); e.target.closest("dialog").close(); return; }
         const type = $("cardType").value;
         const statement = parseInt($("cardStatement").value);
         const due = parseInt($("cardDue").value);
@@ -1535,10 +1623,6 @@
 
       // ---------- SİLME İŞLEMLERİ ----------
       function deleteCard(id) {
-        if (
-          !confirm("Bu kartı ve kartın tüm işlemlerini silmek istiyor musun?")
-        )
-          return;
         state.cards = state.cards.filter((c) => c.id !== id);
         state.incomes = state.incomes.filter((i) => i.cardId !== id);
         state.expenses = state.expenses.filter((x) => x.cardId !== id);
@@ -1636,7 +1720,7 @@
               {
                 data: values,
                 backgroundColor: colors,
-                borderColor: "#000000",
+                borderColor: "#0c1824",
                 borderWidth: 2,
                 hoverOffset: 16,
               },
@@ -1688,21 +1772,22 @@
           const m = meta(t, n), s = spent[n] || 0;
           const lim = t === "expense" ? state.categoryLimits[n] : 0;
           const over = lim && s > lim;
-          return `<button class="tile" data-i="${i}"><span class="ico" style="background:${m.color}26">${m.icon}</span><span class="t"><b>${esc(n)}</b><span class="${over ? "warn" : ""}" style="${over ? "" : "color:" + m.color}">${money(s)}${lim ? " / " + money(lim) : ""}</span>${lim ? `<div class="bar"><div style="width:${Math.min(100, (s / lim) * 100)}%;background:${over ? "var(--red)" : m.color}"></div></div>` : ""}</span>${editMode ? '<span class="muted">✎</span>' : ""}</button>`;
+          return `<button class="tile cat" data-i="${i}" style="--c:${m.color}"><span class="ico" style="background:${m.color}26">${m.icon}</span><span class="t"><b>${esc(n)}</b><span class="${over ? "warn" : ""}" style="${over ? "" : "color:" + m.color}">${money(s)}${lim ? " / " + money(lim) : ""}</span>${lim ? `<div class="bar"><div style="width:${Math.min(100, (s / lim) * 100)}%;background:${over ? "var(--red)" : m.color}"></div></div>` : ""}</span>${editMode ? '<span class="muted">✎</span>' : ""}</button>`;
         }).join("") + `<button class="tile add" data-cat-add><span class="ico" style="background:#ffffff14">＋</span><b>Ekle</b></button>`;
       }
 
       function renderCards() {
         $("cardList").innerHTML = state.cards.map((c) => {
           const cr = c.type === "credit";
+          const col = cr ? "#ff9bb3" : c.type === "cash" ? "#4fd1a5" : "#74c0fc";
           const pct = cr && c.amount > 0 ? Math.min(100, (c.used / c.amount) * 100) : 0;
           let due = "";
           if (cr && c.dueDay) {
             const left = daysUntil(c.dueDay);
-            due = `<span class="${left <= 3 ? "warn" : left <= 7 ? "soon" : "muted"}">Son ödeme: ayın ${c.dueDay}. günü (${left === 0 ? "bugün" : left + " gün"})</span>`;
+            due = `<div class="${left <= 3 ? "warn" : left <= 7 ? "soon" : "muted"}">Son ödeme: ayın ${c.dueDay}. günü (${left === 0 ? "bugün" : left + " gün"})</div>`;
           }
-          return `<div class="tile"><span class="ico" style="background:${cr ? "#f472b626" : c.type === "cash" ? "#4ade8026" : "#38bdf826"}">${cr ? "💳" : c.type === "cash" ? "💵" : "🏦"}</span><span class="t"><b>${esc(c.name)}</b><span class="inc private">${money(cr ? c.amount - c.used : c.amount)}</span><span class="muted">${cr ? "Limit " + money(c.amount) + " · Kullanılan " + money(c.used) : typeNames[c.type]}</span>${cr ? `<div class="bar"><div style="width:${pct}%"></div></div>` : ""}${due}</span><button class="btn-danger" data-del-card="${c.id}" aria-label="Sil">✕</button></div>`;
-        }).join("") + `<button class="tile add" data-add-card><span class="ico" style="background:#ffffff14">＋</span><b>Hesap ekle</b></button>`;
+          return `<div class="tile acct" style="--c:${col}"><div class="acct-top"><span class="ico">${cr ? "💳" : c.type === "cash" ? "💵" : "🏦"}</span><span class="t"><b>${esc(c.name)}</b><span class="muted">${typeNames[c.type]}</span></span><button class="icon-btn sm" data-edit-card="${c.id}" aria-label="Düzenle">✎</button><button class="btn-danger" data-del-card="${c.id}" aria-label="Sil">✕</button></div><div class="acct-bal">${money(cr ? c.amount - c.used : c.amount)}${cr ? " <small>kullanılabilir</small>" : ""}</div>${cr ? `<div class="muted">Limit ${money(c.amount)} · Kullanılan ${money(c.used)}</div><div class="bar"><div style="width:${pct}%"></div></div>` : ""}${due}</div>`;
+        }).join("") + `<button class="tile add" data-add-card><span class="ico">＋</span><b>Hesap ekle</b></button>`;
       }
 
       function renderTx() {
@@ -1745,7 +1830,6 @@
         render();
       }
 
-      paintEye();
       toggleCreditDates();
       setTab("categories");
       render();
