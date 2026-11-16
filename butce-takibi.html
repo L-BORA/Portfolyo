@@ -744,7 +744,14 @@
       <main>
         <!-- Özet -->
         <section class="panel full">
-          <h2>Bu Ay Özeti</h2>
+          <h2>
+            Özet
+            <input
+              type="month"
+              id="monthPicker"
+              style="width: auto; margin-left: 10px"
+            />
+          </h2>
           <div class="summary">
             <div class="stat">
               <span>Toplam Gelir</span><strong id="sumIncome">0</strong>
@@ -1034,7 +1041,8 @@
       const uid = () =>
         Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       const today = () => new Date().toISOString().slice(0, 10);
-      const thisMonth = () => new Date().toISOString().slice(0, 7);
+      let selectedMonth = new Date().toISOString().slice(0, 7);
+      const thisMonth = () => selectedMonth;
       const money = (n) =>
         n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
 
@@ -1670,6 +1678,13 @@
         saveState();
         render();
       }
+      $("monthPicker").value = selectedMonth;
+      $("monthPicker").addEventListener("change", (e) => {
+        if (e.target.value) {
+          selectedMonth = e.target.value;
+          render();
+        }
+      });
 
       toggleCreditDates();
       toggleRecurringDay();
