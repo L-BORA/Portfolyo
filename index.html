@@ -321,6 +321,7 @@
         z-index: 1;
         display: flex;
         flex-direction: column;
+        width: 30vw;
         height: 520px;
         padding: 2.2rem 2rem 2rem;
         background: var(--bg);
@@ -696,7 +697,28 @@
       }
           /* Telefon: kart daha kompakt, aktif kart büyütülmez */
       @media (max-width: 720px) {
+        /* Oklar kartın yanına değil, karuselin üstüne oturur: kart tam genişlikte kalır */
+        .carousel {
+          position: relative;
+        }
+        .viewport {
+          width: 100%;
+        }
+        .arrow {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 5;
+          background: var(--bg);
+        }
+        #prev {
+          left: 0;
+        }
+        #next {
+          right: 0;
+        }
         .card {
+          width: 74vw;
           height: 470px;
           padding: 1.6rem 1.3rem 1.4rem;
         }
@@ -943,13 +965,12 @@
       // Ekran genişliğine göre kart boyutlarını ve kaydırmayı hesapla
       function layout() {
         const vw = viewport.clientWidth;
-        const ratio = vw < 720 ? 0.74 : 0.3; // mobilde tek kart, masaüstünde üç kart
-        const cw = vw * ratio;
+        const firstCard = track.querySelector(".card");
+        if (!firstCard) return;
+        // Kart genişliği CSS'ten gelir, burada sadece ölçülür
+        const cw = firstCard.offsetWidth;
         const gap = vw * 0.04;
         track.style.gap = gap + "px";
-        track.querySelectorAll(".card").forEach((c) => {
-          c.style.width = cw + "px";
-        });
         const offset = vw / 2 - cw / 2 - current * (cw + gap);
         track.style.transform = `translateX(${offset}px)`;
       }
@@ -957,6 +978,7 @@
       prevBtn.addEventListener("click", () => goTo(current - 1));
       nextBtn.addEventListener("click", () => goTo(current + 1));
       window.addEventListener("resize", layout);
+      window.addEventListener("load", layout);
 
       // Telefonda parmakla sağa sola kaydırma
       let touchStartX = 0;
