@@ -916,8 +916,7 @@
           <div class="summary">
             <div class="stat"><span>Gelir</span><strong class="inc" data-sum="inc"></strong></div>
             <div class="stat"><span>Gider</span><strong class="exp" data-sum="exp"></strong></div>
-            <div class="stat"><span>Kalan</span><strong data-sum="left"></strong></div>
-            <div class="acct-strip" data-accounts style="grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 16px;font-size:0.85rem;opacity:0.85;padding:6px 0"></div>
+                        <div class="acct-strip" data-accounts style="grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 16px;font-size:0.85rem;opacity:0.85;padding:6px 0"></div>
           </div>
           <div id="txList"></div>
         </section>
@@ -926,8 +925,7 @@
           <div class="summary">
             <div class="stat"><span>Gelir</span><strong class="inc" data-sum="inc"></strong></div>
             <div class="stat"><span>Gider</span><strong class="exp" data-sum="exp"></strong></div>
-            <div class="stat"><span>Kalan</span><strong data-sum="left"></strong></div>
-            <div class="acct-strip" data-accounts style="grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 16px;font-size:0.85rem;opacity:0.85;padding:6px 0"></div>
+                        <div class="acct-strip" data-accounts style="grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px 16px;font-size:0.85rem;opacity:0.85;padding:6px 0"></div>
           </div>
           <div class="charts" style="margin-top:14px">
             <div>
@@ -1780,13 +1778,11 @@
       function renderSummary() {
         const m = thisMonth();
         const sum = (l) => l.filter((i) => i.date.startsWith(m)).reduce((s, i) => s + i.amount, 0);
-        const isCredit = (x) => findCard(x.cardId)?.type === "credit";
         const inc = sum(state.incomes), exp = sum(state.expenses);
-        const expBank = sum(state.expenses.filter((x) => !isCredit(x)));
-        const bal = state.cards.filter((c) => c.type !== "credit").reduce((s, c) => s + c.amount, 0);
+                const bal = state.cards.filter((c) => c.type !== "credit").reduce((s, c) => s + c.amount, 0);
         const cr = state.cards.filter((c) => c.type === "credit").reduce((s, c) => s + c.amount - c.used, 0);
         const set = (k, v) => document.querySelectorAll(`[data-sum="${k}"]`).forEach((el) => (el.textContent = v));
-        set("inc", money(inc)); set("exp", money(exp)); set("left", money(inc - expBank));
+        set("inc", money(inc)); set("exp", money(exp)); 
         // Kalan kutusunun altında tüm hesaplar ve bakiyeleri
         const accHtml = state.cards.map((c) => {
           const v = c.type === "credit" ? c.amount - c.used : c.amount;
@@ -1837,7 +1833,7 @@
           const list = days[d];
           const net = list.reduce((s, x) => s + (x.k === "income" ? x.amount : -x.amount), 0);
           const dt = new Date(d + "T00:00");
-          return `<div class="dayhead"><span><b>${dt.getDate()}</b>${dt.toLocaleDateString("tr-TR", { weekday: "long", month: "long", year: "numeric" })}</span><span class="${net < 0 ? "exp" : "inc"}">${net < 0 ? "−" : "+"}${money(Math.abs(net))}</span></div>` +
+          return `<div class="dayhead"><span><b>${dt.getDate()}</b>${dt.toLocaleDateString("tr-TR", { weekday: "long", month: "long", year: "numeric" })}</span></div>` +
             list.map((x) => {
               const mt = meta(x.k, x.category), c = findCard(x.cardId), inc = x.k === "income";
               return `<div class="tx"><span class="ico" style="background:${mt.color}26">${mt.icon}</span><span class="t"><b>${esc(x.note || x.category)}${x.recurring ? " 🔁" : ""}</b><span class="muted">${esc(x.note ? x.category + " · " : "")}${esc(c ? c.name : "Silinmiş hesap")}</span></span><span class="${inc ? "inc" : "exp"}">${inc ? "+" : "−"}${money(x.amount)}</span><button class="btn-danger" data-del="${x.k}:${x.id}" aria-label="Sil">✕</button></div>`;
