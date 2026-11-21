@@ -916,7 +916,7 @@
           <div class="summary">
             <div class="stat"><span>Gelir</span><strong class="inc" data-sum="inc"></strong></div>
             <div class="stat"><span>Gider</span><strong class="exp" data-sum="exp"></strong></div>
-            <div class="stat"><span>Kalan</span><strong data-sum="left"></strong></div>
+            <div class="stat"><span>Kalan</span><strong data-sum="left"></strong><div class="kalan-accts" data-accounts style="font-size:0.72rem;opacity:0.8;margin-top:4px;line-height:1.4"></div></div>
           </div>
           <div id="txList"></div>
         </section>
@@ -925,7 +925,7 @@
           <div class="summary">
             <div class="stat"><span>Gelir</span><strong class="inc" data-sum="inc"></strong></div>
             <div class="stat"><span>Gider</span><strong class="exp" data-sum="exp"></strong></div>
-            <div class="stat"><span>Kalan</span><strong data-sum="left"></strong></div>
+            <div class="stat"><span>Kalan</span><strong data-sum="left"></strong><div class="kalan-accts" data-accounts style="font-size:0.72rem;opacity:0.8;margin-top:4px;line-height:1.4"></div></div>
           </div>
           <div class="charts" style="margin-top:14px">
             <div>
@@ -954,18 +954,6 @@
     </div>
 
     <!-- ==================== AÇILIR PENCERELER ==================== -->
-
-    <!-- Düzenle seçimi: iki başlık -->
-    <dialog id="editChooser">
-      <h2>
-        <span>Ne düzenlemek istersin?</span>
-        <button class="close-x" type="button" data-close>&times;</button>
-      </h2>
-      <div style="display: grid; gap: 10px">
-        <button class="btn btn-ghost" type="button" id="chooseAcc" style="width: 100%">Hesabı düzenle</button>
-        <button class="btn btn-ghost" type="button" id="chooseCat" style="width: 100%">Kategoriyi düzenle</button>
-      </div>
-    </dialog>
 
     <!-- Kart / Nakit -->
     <dialog id="cardDialog">
@@ -1491,24 +1479,6 @@
 
       // ---------- HESAP DÜZENLE ----------
       let editingCard = null;
-      let chooserCardId = null;
-      function openEditChooser(cardId) {
-        chooserCardId = cardId;
-        $("editChooser").showModal();
-      }
-      $("chooseAcc").onclick = () => {
-        $("editChooser").close();
-        openCardDialog(findCard(chooserCardId));
-      };
-      $("chooseCat").onclick = () => {
-        $("editChooser").close();
-        setTab("categories");
-        if (!editMode) {
-          editMode = true;
-          $("editCats").classList.add("on");
-          renderCats();
-        }
-      };
       function openCardDialog(c) {
         editingCard = c ? c.id : null;
         $("cardForm").reset();
@@ -1562,7 +1532,7 @@
       $("cardList").addEventListener("click", (e) => {
         if (e.target.closest("[data-add-card]")) return openCardDialog(null);
         const ed = e.target.closest("[data-edit-card]");
-        if (ed) return openEditChooser(ed.dataset.editCard);
+        if (ed) return openCardDialog(findCard(ed.dataset.editCard));
         const d = e.target.closest("[data-del-card]");
         if (d) armDelete(d, () => deleteCard(d.dataset.delCard));
       });
@@ -1815,6 +1785,12 @@
         const cr = state.cards.filter((c) => c.type === "credit").reduce((s, c) => s + c.amount - c.used, 0);
         const set = (k, v) => document.querySelectorAll(`[data-sum="${k}"]`).forEach((el) => (el.textContent = v));
         set("inc", money(inc)); set("exp", money(exp)); set("left", money(inc - expBank));
+        // Kalan kutusunun altında tüm hesaplar ve bakiyeleri
+        const accHtml = state.cards.map((c) => {
+          const v = c.type === "credit" ? c.amount - c.used : c.amount;
+          return `<div>${esc(c.name)}: ${money(v)}</div>`;
+        }).join("");
+        document.querySelectorAll("[data-accounts]").forEach((el) => (el.innerHTML = accHtml));
         set("bal", money(bal)); set("credit", money(cr));
         const [y, mo] = m.split("-").map(Number);
         $("monthLabel").textContent = new Date(y, mo - 1, 1).toLocaleDateString("tr-TR", { month: "long", year: "numeric" });
