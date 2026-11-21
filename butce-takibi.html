@@ -965,6 +965,7 @@
         <input
           id="cardName"
           placeholder="Hesap adı (örn: Ziraat Kredi)"
+          maxlength="40"
           required
         />
         <select id="cardType">
@@ -1024,7 +1025,7 @@
           <button class="icon-btn" id="noteBtn" type="button" aria-label="Açıklama">💬</button>
           <button class="icon-btn" id="recBtn" type="button" aria-label="Aylık tekrar">🔁</button>
         </div>
-        <input id="qNote" class="hidden" placeholder="Açıklama (örn: Migros)" />
+        <input id="qNote" class="hidden" maxlength="60" placeholder="Açıklama (örn: Migros)" />
         <div class="keys" id="keys"></div>
       </div>
       <div id="qList" class="hidden">
@@ -1121,10 +1122,23 @@
       const money = (n) =>
         n.toLocaleString("tr-TR", { style: "currency", currency: "TRY" });
 
+      // Hem metin hem HTML özniteliği içinde güvenli kullanım için tüm özel karakterleri kaçırır
       function esc(text) {
-        const div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
+        return String(text ?? "").replace(/[&<>"']/g, (c) =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+        );
+      }
+
+      // Buluttan gelen veriyi beklenen yapıya zorlar: dizi olmayan alanlar boşa çevrilir
+      function sanitizeState(data) {
+        const s = { ...structuredClone(defaultState), ...(data || {}) };
+        for (const k of ["cards", "incomes", "expenses", "incomeCategories", "expenseCategories"]) {
+          if (!Array.isArray(s[k])) s[k] = structuredClone(defaultState[k]);
+        }
+        for (const k of ["categoryLimits", "categoryMeta"]) {
+          if (!s[k] || typeof s[k] !== "object" || Array.isArray(s[k])) s[k] = {};
+        }
+        return s;
       }
 
       const typeNames = {
@@ -1235,7 +1249,7 @@
         unsubscribeData = docRef.onSnapshot(
           (snap) => {
             if (snap.exists) {
-              state = { ...structuredClone(defaultState), ...snap.data() };
+              state = sanitizeState(snap.data());
             } else {
               // İlk girişte hesap için boş bir kayıt oluştur
               state = structuredClone(defaultState);
@@ -1305,12 +1319,16 @@
       const ICONS = ["🛒","🍽️","☕","🚌","🚗","🎬","🏠","🧾","💊","🐾","👨‍👩‍👧","👕","🎁","✈️","📱","💼","📈","💰","🎓","🔁"];
       const DEFAULT_ICON = { Market: "🛒", Fatura: "🧾", Yemek: "🍽️", Ulaşım: "🚌", Eğlence: "🎬", Abonelik: "🔁", Maaş: "💼", "Pasif Gelir": "📈", Diğer: "✨" };
       const catList = (t) => (t === "income" ? state.incomeCategories : state.expenseCategories);
+      // İkon ve renk sadece izinli listelerden gelebilir; aksi halde varsayılan kullanılır.
+      // Bu sayede veritabanındaki bozuk bir değer HTML ya da stil içine sızamaz.
       function meta(t, name) {
         const m = state.categoryMeta[t + ":" + name] || {};
         const i = Math.max(0, catList(t).indexOf(name));
+        const icon = ICONS.includes(m.icon) ? m.icon : null;
+        const color = PALETTE.includes(m.color) ? m.color : null;
         return {
-          icon: m.icon || DEFAULT_ICON[name] || (t === "income" ? "💰" : "🏷️"),
-          color: m.color || PALETTE[i % PALETTE.length],
+          icon: icon || DEFAULT_ICON[name] || (t === "income" ? "💰" : "🏷️"),
+          color: color || PALETTE[i % PALETTE.length],
         };
       }
 
@@ -1412,7 +1430,7 @@
         if (isExp && card.type === "credit" && amount > card.amount - card.used) {
           if (!confirm("Kredi kartı limitin yetersiz. Yine de eklensin mi?")) return;
         }
-        const item = { id: uid(), amount, category: q.cat, note: q.note.trim(), cardId: card.id, date: q.date };
+        const item = { id: uid(), amount, category: q.cat, note: q.note.trim().slice(0, 60), cardId: card.id, date: q.date };
         if (isExp) state.expenses.push({ ...item, recurring: q.recurring, day: q.recurring ? Number(q.date.slice(8)) : null });
         else state.incomes.push(item);
         changeCard(card, amount, isExp);
@@ -1633,7 +1651,7 @@
 
         state.cards.push({
           id: uid(),
-          name: $("cardName").value.trim(),
+          name: $("cardName").value.trim().slice(0, 40),
           type: type,
           amount: parseFloat($("cardAmount").value),
           used: 0,
