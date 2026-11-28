@@ -1,1180 +1,914 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Portfolyo</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;600&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      /* ===== Renkler: sadece siyah, beyaz ve griler ===== */
-      :root {
-        --bg: #000000;
-        --ink: #ecebe6;
-        --muted: #8a8a85;
-        --line: #33353a;
-        --serif: "Instrument Serif", Georgia, serif;
-        --sans: "Manrope", system-ui, sans-serif;
-        --ease: cubic-bezier(0.22, 1, 0.36, 1);
-      }
-
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
-      body {
-        background: var(--bg);
-        color: var(--ink);
-        font-family: var(--sans);
-        font-weight: 300;
-        line-height: 1.6;
-        overflow-x: hidden;
-      }
-
-      /* Arka plan noktaları (canvas) */
-      #dots {
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        pointer-events: none;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      /* ===== Hero ===== */
-      .hero {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 0 8vw;
-      }
-
-      .hero h1 {
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: clamp(3.5rem, 13vw, 11rem);
-        line-height: 0.95;
-        letter-spacing: -0.02em;
-      }
-
-      .hero h1 .word {
-        display: inline-block;
-        overflow: hidden;
-        vertical-align: bottom;
-      }
-
-      .hero h1 .char {
-        display: inline-block;
-        transform: translateY(110%);
-        animation: rise 1s var(--ease) forwards;
-        animation-delay: calc(var(--i) * 45ms);
-      }
-
-      @keyframes rise {
-        to {
-          transform: translateY(0);
-        }
-      }
-
-      .hero p {
-        max-width: 36ch;
-        margin-top: 2.5rem;
-        font-size: 1.1rem;
-        color: var(--muted);
-        opacity: 0;
-        animation: fade 1.2s var(--ease) 1s forwards;
-      }
-
-      .hero .scroll-hint {
-        position: absolute;
-        bottom: 2.5rem;
-        left: 8vw;
-        font-size: 0.8rem;
-        color: var(--muted);
-        opacity: 0;
-        animation: fade 1s 1.6s forwards;
-      }
-
-      .hero .scroll-hint::after {
-        content: "";
-        display: block;
-        width: 1px;
-        height: 40px;
-        margin-top: 0.6rem;
-        background: var(--ink);
-        transform-origin: top;
-        animation: drip 2s var(--ease) infinite;
-      }
-
-      @keyframes drip {
-        0% {
-          transform: scaleY(0);
-        }
-        50% {
-          transform: scaleY(1);
-          transform-origin: top;
-        }
-        51% {
-          transform-origin: bottom;
-        }
-        100% {
-          transform: scaleY(0);
-          transform-origin: bottom;
-        }
-      }
-
-      @keyframes fade {
-        to {
-          opacity: 1;
-        }
-      }
-
-      /* ===== Bölüm genel ===== */
-      section {
-        padding: 14vh 8vw;
-      }
-
-      .label {
-        font-size: 0.85rem;
-        color: var(--muted);
-        margin-bottom: 3rem;
-      }
-
-      /* ===== Projeler: liste tarzı ===== */
-      .project {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        align-items: baseline;
-        gap: 2rem;
-        padding: 2rem 0;
-        border-top: 1px solid var(--line);
-        position: relative;
-        opacity: 0;
-        transform: translateY(30px);
-        transition:
-          opacity 0.9s var(--ease),
-          transform 0.9s var(--ease);
-      }
-
-      .project.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      .project:last-child {
-        border-bottom: 1px solid var(--line);
-      }
-
-      .project h3 {
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: clamp(2rem, 5vw, 3.6rem);
-        line-height: 1.1;
-        transition: transform 0.6s var(--ease);
-      }
-
-      .project:hover h3 {
-        transform: translateX(1.2rem);
-      }
-
-      .project p {
-        grid-column: 1 / 2;
-        color: var(--muted);
-        max-width: 52ch;
-        font-size: 0.95rem;
-      }
-
-      .tags {
-        grid-column: 1 / 2;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        font-size: 0.8rem;
-      }
-
-      .tags span {
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        padding: 0.2rem 0.75rem;
-      }
-
-      .links {
-        grid-column: 2 / 3;
-        grid-row: 1 / 2;
-        display: flex;
-        gap: 1.2rem;
-        font-size: 0.9rem;
-      }
-
-      /* Demo butonu: siyah, köşesiz, hover'da etrafında çerçeve açılır */
-      .demo-btn {
-        position: relative;
-        display: inline-block;
-        padding: 0.8rem 1.4rem;
-        background: var(--ink);
-        color: var(--bg);
-        border: 1px solid var(--ink);
-        border-radius: 0;
-        font-size: 0.9rem;
-        font-weight: 600;
-        transition:
-          background 0.4s var(--ease),
-          color 0.4s var(--ease);
-      }
-
-      .demo-btn::after {
-        content: "";
-        position: absolute;
-        inset: -7px;
-        border: 1px solid var(--ink);
-        border-radius: 0;
-        opacity: 0;
-        transform: scale(0.92);
-        transition:
-          opacity 0.4s var(--ease),
-          transform 0.5s var(--ease);
-        pointer-events: none;
-      }
-
-      .demo-btn:hover {
-        background: transparent;
-        color: var(--ink);
-      }
-
-      .demo-btn:hover::after {
-        opacity: 1;
-        transform: scale(1);
-      }
-
-      /* ===== Proje karuselı ===== */
-      .projects-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 3rem;
-      }
-
-      .all-btn {
-        background: none;
-        color: var(--ink);
-        border: 1px solid var(--ink);
-        border-radius: 0;
-        padding: 0.6rem 1.2rem;
-        font: inherit;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition:
-          background 0.4s var(--ease),
-          color 0.4s var(--ease);
-      }
-
-      .all-btn:hover {
-        background: var(--ink);
-        color: var(--bg);
-      }
-
-      .carousel {
-        display: flex;
-        align-items: center;
-        gap: 1.2rem;
-      }
-
-      .viewport {
-        flex: 1;
-        touch-action: pan-y;
-        overflow: hidden;
-        padding: 4rem 0;
-      }
-
-      .track {
-        display: flex;
-        align-items: center;
-        transition: transform 0.8s var(--ease);
-      }
-
-      /* Kart çerçevesindeki çizginin açısı (animasyonla dönebilsin diye) */
-      @property --a {
-        syntax: "<angle>";
-        inherits: false;
-        initial-value: 0deg;
-      }
-
-      .card {
-        flex: 0 0 auto;
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-direction: column;
-        width: 30vw;
-        height: 520px;
-        padding: 2.2rem 2rem 2rem;
-        background: var(--bg);
-        opacity: 0.3;
-        transform: scale(0.85);
-        cursor: pointer;
-        transition:
-          opacity 0.6s var(--ease),
-          transform 0.8s var(--ease);
-      }
-
-      /* Sabit ince çerçeve */
-      .card::after {
-        content: "";
-        position: absolute;
-        inset: -14px;
-        border: 1px solid rgba(236, 235, 230, 0.22);
-        pointer-events: none;
-      }
-
-      /* Çerçevenin etrafını dolaşan parlak çizgi: hızlanır, yavaşlar */
-      .card::before {
-        content: "";
-        position: absolute;
-        inset: -14px;
-        padding: 1.5px;
-        background: conic-gradient(
-          from var(--a),
-          transparent 0deg,
-          var(--ink) 60deg,
-          transparent 130deg,
-          transparent 180deg,
-          var(--ink) 240deg,
-          transparent 310deg,
-          transparent 360deg
-        );
-        -webkit-mask:
-          linear-gradient(#000 0 0) content-box,
-          linear-gradient(#000 0 0);
-        -webkit-mask-composite: xor;
-        mask:
-          linear-gradient(#000 0 0) content-box exclude,
-          linear-gradient(#000 0 0);
-        pointer-events: none;
-        animation: orbit 7s ease-in-out infinite;
-      }
-
-      @keyframes orbit {
-        0% {
-          --a: 0deg;
-        }
-        25% {
-          --a: 120deg;
-        }
-        50% {
-          --a: 300deg;
-        }
-        75% {
-          --a: 420deg;
-        }
-        100% {
-          --a: 720deg;
-        }
-      }
-
-      .card.active {
-        opacity: 1;
-        transform: scale(1.12);
-        z-index: 2;
-        cursor: default;
-      }
-
-      /* İçerik: tüm kartlarda aynı ölçü ve aralıklar */
-      .card h3 {
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: clamp(1.6rem, 2.6vw, 2.3rem);
-        line-height: 1.1;
-      }
-
-      .card p {
-        color: var(--muted);
-        font-size: 0.9rem;
-        line-height: 1.6;
-        margin-top: 1rem;
-      }
-
-      .card .tags {
-        margin-top: 1.2rem;
-        margin-bottom: 1.6rem;
-        gap: 0.5rem;
-        font-size: 0.75rem;
-      }
-
-      .card .demo-btn {
-        display: block;
-        margin-top: auto;
-        padding: 0.9rem 0.6rem;
-        font-size: 0.8rem;
-        text-align: center;
-        white-space: nowrap;
-      }
-
-      .arrow {
-        flex: none;
-        width: 52px;
-        height: 52px;
-        background: none;
-        color: var(--ink);
-        border: 1px solid var(--ink);
-        border-radius: 0;
-        cursor: pointer;
-        display: grid;
-        place-items: center;
-        transition:
-          background 0.4s var(--ease),
-          color 0.4s var(--ease),
-          opacity 0.4s;
-      }
-
-      .arrow:hover:not(:disabled) {
-        background: var(--ink);
-        color: var(--bg);
-      }
-
-      .arrow:disabled {
-        opacity: 0.25;
-        cursor: default;
-      }
-
-      .arrow svg {
-        width: 20px;
-        height: 20px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 1.2;
-      }
-
-      .pips {
-        display: flex;
-        justify-content: center;
-        gap: 0.6rem;
-        margin-top: 2rem;
-      }
-
-      .pip {
-        width: 10px;
-        height: 10px;
-        background: none;
-        border: 1px solid var(--ink);
-        border-radius: 0;
-        padding: 0;
-        cursor: pointer;
-      }
-
-      .pip.active {
-        background: var(--ink);
-      }
-
-      /* Tüm projeler ekranı */
-      .overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 100;
-        background: var(--bg);
-        overflow-y: auto;
-        padding: 6vh 8vw;
-        opacity: 0;
-        visibility: hidden;
-        transition:
-          opacity 0.5s var(--ease),
-          visibility 0.5s;
-      }
-
-      .overlay.open {
-        opacity: 1;
-        visibility: visible;
-      }
-
-      .overlay-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 4rem;
-      }
-
-      .all-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 3rem 2vw;
-      }
-
-      .card.static {
-        opacity: 1;
-        transform: none;
-        cursor: default;
-      }
-
-      @media (max-width: 900px) {
-        .all-grid {
-          grid-template-columns: repeat(2, 1fr);
-        }
-      }
-
-      @media (max-width: 720px) {
-        .all-grid {
-          grid-template-columns: 1fr;
-        }
-        .card:not(.active):not(.static) {
-          opacity: 0;
-          pointer-events: none;
-        }
-        .arrow {
-          width: 40px;
-          height: 40px;
-        }
-      }
-
-      /* ===== Kişisel bölümler: hikaye, yolculuk, ilgi alanları ===== */
-      .reveal {
-        opacity: 0;
-        transform: translateY(30px);
-        transition:
-          opacity 0.9s var(--ease),
-          transform 0.9s var(--ease);
-      }
-
-      .reveal.visible {
-        opacity: 1;
-        transform: translateY(0);
-      }
-
-      .story {
-        font-family: var(--serif);
-        font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-        line-height: 1.25;
-        max-width: 34ch;
-      }
-
-      .timeline {
-        position: relative;
-        display: grid;
-        gap: 2.5rem;
-        border-left: 1px solid var(--line);
-        padding-left: 2rem;
-        max-width: 60ch;
-      }
-
-      .step {
-        position: relative;
-      }
-
-      /* Zaman çizgisi üzerindeki kare noktalar */
-      .step::before {
-        content: "";
-        position: absolute;
-        left: calc(-2rem - 5px);
-        top: 0.6rem;
-        width: 9px;
-        height: 9px;
-        background: var(--ink);
-      }
-
-      .step h4 {
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: 1.7rem;
-        line-height: 1.2;
-      }
-
-      .step p {
-        color: var(--muted);
-        font-size: 0.95rem;
-        margin-top: 0.4rem;
-      }
-
-      .interests {
-        font-size: 0.95rem;
-        gap: 0.6rem;
-      }
-
-      .interests span {
-        padding: 0.5rem 1.1rem;
-      }
-
-      /* ===== Hakkımda ===== */
-      .about {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6vw;
-      }
-
-      .about p.big {
-        font-family: var(--serif);
-        font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-        line-height: 1.25;
-      }
-
-      .skills {
-        list-style: none;
-        display: grid;
-        gap: 0.9rem;
-      }
-
-      .skills li {
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 1px solid var(--line);
-        padding-bottom: 0.6rem;
-      }
-
-      /* ===== İletişim ===== */
-      .contact {
-        border-top: 1px solid var(--line);
-      }
-
-      .contact a.mail {
-        font-family: var(--serif);
-        font-size: clamp(2.2rem, 7vw, 6rem);
-        line-height: 1;
-        display: inline-block;
-        transition: letter-spacing 0.6s var(--ease);
-      }
-
-      .contact a.mail:hover {
-        letter-spacing: 0.02em;
-      }
-
-      footer {
-        padding: 2rem 8vw;
-        font-size: 0.8rem;
-        color: var(--muted);
-        display: flex;
-        justify-content: space-between;
-      }
-
-      /* ===== Mobil ===== */
-      @media (max-width: 720px) {
-        .about {
-          grid-template-columns: 1fr;
-        }
-        .project {
-          grid-template-columns: 1fr;
-        }
-        .links {
-          grid-column: 1 / 2;
-          grid-row: auto;
-        }
-        footer {
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-      }
-
-      /* Hareket hassasiyeti kapalıysa animasyonları kapat */
-      @media (prefers-reduced-motion: reduce) {
-        *,
-        *::before,
-        *::after {
-          animation-duration: 0.01ms !important;
-          transition-duration: 0.01ms !important;
-        }
-        .project,
-        .reveal {
-          opacity: 1;
-          transform: none;
-        }
-      }
-
-      :focus-visible {
-        outline: 1px solid var(--ink);
-        outline-offset: 4px;
-      }
-      /* Telefon: kart daha kompakt, aktif kart büyütülmez */
-      @media (max-width: 720px) {
-        /* Oklar kartın yanına değil, karuselin üstüne oturur: kart tam genişlikte kalır */
-        .carousel {
-          position: relative;
-        }
-        .viewport {
-          width: 100%;
-        }
-        .arrow {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 5;
-          background: var(--bg);
-        }
-        #prev {
-          left: 0;
-        }
-        #next {
-          right: 0;
-        }
-        .card {
-          width: 74vw;
-          height: 470px;
-          padding: 1.6rem 1.3rem 1.4rem;
-        }
-        .card.active {
-          transform: scale(1);
-        }
-        .card h3 {
-          font-size: 1.6rem;
-        }
-        .card p {
-          font-size: 0.85rem;
-          line-height: 1.5;
-          margin-top: 0.7rem;
-        }
-        .card .tags {
-          margin-top: 0.9rem;
-          margin-bottom: 1.1rem;
-          font-size: 0.7rem;
-        }
-        .card .demo-btn {
-          padding: 0.8rem 0.5rem;
-          font-size: 0.75rem;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="dots"></canvas>
-
-    <header class="hero">
-      <h1 id="title">Latif Can<br />BORA</h1>
-      <p>
-        Kodları kullanarak dijital yaşamı inşa ederken gerçek yaşamımızı
-        kolaylaştırıyorum.
-      </p>
-      <div class="scroll-hint">aşağı kaydır</div>
-    </header>
-
-    <section id="projects">
-      <div class="projects-head">
-        <p class="label" style="margin-bottom: 0">Seçili projeler</p>
-        <button class="all-btn" id="open-all">Tümünü gör</button>
-      </div>
-
-      <div class="carousel">
-        <button class="arrow" id="prev" aria-label="Önceki proje">
-          <svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
-        </button>
-        <div class="viewport" id="viewport">
-          <div class="track" id="project-list"></div>
-        </div>
-        <button class="arrow" id="next" aria-label="Sonraki proje">
-          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-        </button>
-      </div>
-
-      <div class="pips" id="pips"></div>
-    </section>
-
-    <div class="overlay" id="overlay" aria-hidden="true">
-      <div class="overlay-head">
-        <p class="label" style="margin-bottom: 0">Tüm projeler</p>
-        <button class="all-btn" id="close">Kapat</button>
-      </div>
-      <div class="all-grid" id="all-grid"></div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>101 Okey Puan Takibi</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  color:#f5efe0;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;
+  background:radial-gradient(ellipse at 50% -10%,#21674f 0%,#143f32 55%,#0b261e 100%) fixed;
+}
+.wrap{width:100%;max-width:880px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:clamp(1.4rem,4vw,2rem);margin:0;letter-spacing:.02em}
+h2{margin:0;font-size:clamp(1.1rem,3vw,1.35rem)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand i{display:inline-block;width:18px;height:24px;border-radius:4px;background:var(--c);box-shadow:0 3px 0 rgba(0,0,0,.35);transform:rotate(var(--r));margin-left:-2px}
+.card{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:clamp(12px,2.5vw,18px);box-shadow:0 12px 30px rgba(0,0,0,.25);min-width:0}
+.muted{color:#b9c9bf;font-size:.92rem}
+.err{color:#ff9d8c;min-height:1.2em;margin:8px 0}
+.sec{font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;color:#d8c98f;margin:0 0 12px}
+
+button{font:inherit;min-height:48px;padding:0 20px;border-radius:12px;border:1px solid transparent;cursor:pointer;color:#2a1d00;background:linear-gradient(#f7d877,#e0ad2c);font-weight:700;box-shadow:0 4px 0 #a97d12;transition:transform .08s;touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #a97d12}
+button.ghost{background:transparent;color:#f5efe0;border:1px solid rgba(255,255,255,.35);box-shadow:none;font-weight:600}
+button.ghost:active{transform:none}
+button.danger{background:linear-gradient(#e7786b,#b3412e);color:#fff;box-shadow:0 4px 0 #7d2a1e}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+button:focus-visible,input:focus-visible{outline:3px solid #f7d877;outline-offset:2px}
+button.big{min-height:60px;font-size:1.12rem;padding:0 28px}
+input[type=text],input[type=number]{font:inherit;min-height:48px;padding:0 12px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:#0d261f;color:#f5efe0;width:100%}
+input::placeholder{color:#7f9a8f}
+input:disabled{opacity:.5}
+
+.screen[hidden]{display:none}
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.bar h2{flex:1;min-width:0}
+.btns{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
+.btns button{flex:1 1 auto}
+.hero{text-align:center;padding:24px 16px}
+.hero h2{font-size:clamp(1.3rem,4vw,1.6rem);margin-bottom:8px}
+.hero button{width:100%;max-width:340px}
+.home-tiles{display:grid;grid-template-columns:repeat(2,84px);gap:12px;justify-content:center;margin:16px 0 22px}
+.home-tiles .tile{width:84px;max-width:84px}
+.home-tiles .tile:hover{transform:none}
+.hist{margin-top:16px}
+
+/* Seçenek kartları */
+.opt-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.opt{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;min-height:96px;padding:16px 18px;background:linear-gradient(160deg,#225d4c,#153a2f);color:#f5efe0;border:1px solid rgba(247,216,119,.35);border-radius:18px;box-shadow:0 8px 0 rgba(0,0,0,.3);font-weight:400}
+.opt b{font-size:1.2rem;color:#fff}
+.opt small{color:#c4d3ca;font-size:.9rem;font-weight:400;line-height:1.35}
+.opt.wide{grid-column:1/-1}
+.opt.sel{border:2px solid #f7d877;box-shadow:0 8px 0 rgba(0,0,0,.3),0 0 0 4px rgba(247,216,119,.25)}
+.opt:hover,.opt:focus-visible{border-color:#f7d877}
+.opt:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.3)}
+
+/* Masa */
+.felt{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+  grid-template-areas:". top ." "left mid right" ". bottom .";
+  gap:10px;align-items:center;padding:18px;border-radius:36px;max-width:620px;margin:0 auto;
+  background:radial-gradient(ellipse at center,#2f8267 0%,#1c5544 70%,#153f33 100%);
+  border:10px solid #6b4a24;box-shadow:inset 0 0 40px rgba(0,0,0,.35),0 14px 30px rgba(0,0,0,.4);
+}
+.seat{display:flex;flex-direction:column;gap:6px;background:rgba(0,0,0,.28);border-radius:14px;padding:10px;min-width:0}
+.seat .pos{font-size:.8rem;color:#f7d877;letter-spacing:.04em}
+.s-top{grid-area:top}.s-left{grid-area:left}.s-right{grid-area:right}.s-bottom{grid-area:bottom}
+.felt-mid{grid-area:mid;text-align:center;color:#f7d877;font-size:2rem;line-height:1}
+.felt-mid small{display:block;font-size:.7rem;color:#c4d3ca;margin-top:6px}
+.hint{margin:0 0 14px}
+
+/* Durum ve skor tablosu */
+.status{margin:4px 0 14px;font-weight:600;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mini{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:58px;border-radius:8px;background:linear-gradient(160deg,#fffdf6,#efe6d0);color:var(--ink);box-shadow:0 4px 0 rgba(0,0,0,.3);font-weight:900;font-size:1.1rem;line-height:1}
+.mini small{font-size:.5rem;color:#6b6456;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.actions button{flex:1 1 150px}
+.table{display:flex;flex-direction:column;min-width:0}
+.trow{display:grid;grid-template-columns:minmax(50px,.9fr) repeat(4,minmax(0,1fr));gap:4px;align-items:center;padding:10px 4px;border-bottom:1px solid rgba(255,255,255,.1);text-align:center;font-variant-numeric:tabular-nums;font-size:.95rem}
+.trow>div:first-child{text-align:left}
+.thead{font-weight:700;border-bottom:2px solid rgba(247,216,119,.5);color:#f7d877}
+.thead>div{overflow-wrap:anywhere;font-size:.85rem;line-height:1.2}
+.thead small,.trow small{display:block;font-weight:400;color:#b9c9bf;font-size:.75rem}
+.neg{color:#ff9d8c}
+.total{font-size:1rem;font-weight:800;border-bottom:none}
+.total>div:first-child{font-size:.85rem}
+.lead{background:rgba(247,216,119,.18);border-radius:10px;color:#f7d877;box-shadow:inset 0 0 0 1px rgba(247,216,119,.5)}
+.teams{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.team{padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);text-align:center}
+.team b{display:block;font-size:1.5rem}
+.team.lead b{color:#f7d877}
+
+/* Okey taşları */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(8px,2.5vw,18px);margin:18px 0 8px}
+.tile{
+  position:relative;width:100%;max-width:150px;aspect-ratio:3/4;margin:0 auto;padding:12px 6px 14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  background:linear-gradient(165deg,#fffdf6 0%,#f3ebd6 60%,#e6dcc0 100%);
+  color:#1b2a24;border-radius:16px;
+  box-shadow:0 8px 0 rgba(0,0,0,.35),0 16px 26px rgba(0,0,0,.4);
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.tile:hover,.tile:focus-visible{transform:translateY(-6px) rotate(-1.5deg);box-shadow:0 14px 0 rgba(0,0,0,.35),0 22px 30px rgba(0,0,0,.45)}
+.tile:active{transform:translateY(2px);box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.tname{font-size:clamp(.6rem,2vw,.78rem);text-transform:uppercase;letter-spacing:.06em;color:#6b6456;font-weight:700}
+.tx{font-size:clamp(1.8rem,7vw,3rem);font-weight:900;line-height:1;color:var(--ink);text-shadow:0 2px 0 rgba(255,255,255,.6)}
+.tbar{width:72%;height:10px;border-radius:6px;background:var(--c);box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+
+/* Giriş animasyonu: grup içindeki her öğe sırayla düşer */
+@keyframes drop{
+  0%{opacity:0;transform:translateY(-160px) rotate(-16deg) scale(.8)}
+  60%{opacity:1;transform:translateY(12px) rotate(4deg) scale(1.04)}
+  80%{transform:translateY(-5px) rotate(-1deg) scale(1)}
+  100%{opacity:1;transform:none}
+}
+.grp.intro>*{opacity:0;pointer-events:none;animation:drop .65s cubic-bezier(.2,.8,.3,1) var(--d,0s) both}
+@media (prefers-reduced-motion: reduce){
+  .grp.intro>*{animation:none;opacity:1}
+  .from-r,.from-l{animation:none}
+}
+
+/* Oyuncu / kayıt listesi */
+.plist{display:grid;gap:10px;margin-top:4px}
+.prow-btn{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;min-height:60px;padding:12px 16px;background:rgba(0,0,0,.25);color:#f5efe0;border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:none;font-weight:600;text-align:left}
+.prow-btn:active{transform:none}
+.prow-btn small{display:block;color:#b9c9bf;font-weight:400;font-size:.8rem}
+.prow-btn .st{color:#f7d877;font-variant-numeric:tabular-nums;font-size:.95rem;text-align:right}
+
+/* Oyuncu kartı: ortada, ok ve kaydırma ile geçiş */
+.mult{text-align:center;margin:-4px 0 12px}
+.carousel{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:8px;align-items:center;max-width:460px;margin:0 auto}
+.nav{width:52px;min-height:88px;padding:0;font-size:2rem;line-height:1;background:rgba(0,0,0,.25);color:#f7d877;border:1px solid rgba(247,216,119,.4);box-shadow:none;border-radius:16px}
+.nav:active{transform:none}
+.stage{min-width:0;touch-action:pan-y}
+.pcard{background:linear-gradient(165deg,#fffdf6 0%,#f3ebd6 60%,#e6dcc0 100%);color:#1b2a24;border-radius:22px;padding:22px 18px;box-shadow:0 10px 0 rgba(0,0,0,.35),0 18px 30px rgba(0,0,0,.4);text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;min-height:360px;justify-content:center}
+.pc-arrow{font-size:clamp(5rem,22vw,8rem);line-height:1;font-weight:900;color:#1f6f5c}
+.pc-name{font-size:clamp(1.7rem,6vw,2.4rem);font-weight:900;line-height:1.1;word-break:break-word}
+.pc-note{font-size:.9rem;color:#b3412e;font-weight:700}
+.pc-toggle{display:flex;align-items:center;gap:10px;font-weight:700;min-height:44px;cursor:pointer}
+.pc-toggle input{width:24px;height:24px;accent-color:#2f8267}
+.pc-field{display:flex;flex-direction:column;gap:6px;width:100%;max-width:260px;font-size:.85rem;color:#6b6456}
+.pc-field input{background:#fff;color:#1b2a24;border:2px solid #cfc3a2;text-align:center;font-size:1.4rem;font-weight:800}
+.pc-score{display:flex;flex-direction:column;align-items:center;margin-top:6px}
+.pc-score span{font-size:.8rem;color:#6b6456;text-transform:uppercase;letter-spacing:.1em}
+.pc-score b{font-size:2.6rem;font-weight:900;color:#1f6f5c;font-variant-numeric:tabular-nums}
+.pc-score b.neg{color:#b3412e}
+.from-r{animation:swapR .35s ease both}
+.from-l{animation:swapL .35s ease both}
+@keyframes swapR{from{opacity:0;transform:translateX(40px) rotate(2deg)}to{opacity:1;transform:none}}
+@keyframes swapL{from{opacity:0;transform:translateX(-40px) rotate(-2deg)}to{opacity:1;transform:none}}
+.dots{display:flex;justify-content:center;gap:12px;margin:18px 0 6px}
+.dot2{width:14px;height:14px;min-height:0;padding:0;border-radius:50%;background:rgba(255,255,255,.25);box-shadow:none;border:none}
+.dot2:active{transform:none}
+.dot2.ok{background:#6fbf9f}
+.dot2.on{background:#f7d877;transform:scale(1.3)}
+.swipe-hint{text-align:center;margin:8px 0 0}
+.sticky{position:sticky;bottom:0;background:linear-gradient(rgba(16,53,43,0),#12392f 30%);padding:14px 0 max(0px,env(safe-area-inset-bottom))}
+.sticky button{width:100%}
+.winner{font-size:1.35rem;font-weight:800;color:#f7d877;margin:10px 0 4px}
+.pv{background:rgba(0,0,0,.28);border-radius:14px;padding:12px 14px;margin:14px 0}
+.pvr{display:flex;justify-content:space-between;gap:12px;padding:4px 0}
+.check{display:flex;align-items:center;gap:8px;min-height:44px}
+.check.big{margin:12px 0}
+.check input{width:22px;height:22px;accent-color:#f7d877}
+
+/* Modal: telefonda tam ekran, geniş ekranda ortada kart */
+.modal{position:fixed;inset:0;background:rgba(5,20,15,.7);backdrop-filter:blur(3px);display:flex;align-items:stretch;justify-content:center;z-index:10}
+.modal[hidden]{display:none}
+.sheet{background:linear-gradient(180deg,#1b4d3d,#11352b);width:100%;height:100%;height:100dvh;overflow:auto;padding:18px 14px 24px;border-top:2px solid rgba(247,216,119,.5);overscroll-behavior:contain}
+.sheet .muted{color:#c4d3ca}
+
+/* Dar ekran: okey taşları 2 üst 2 alt */
+@media (max-width:599px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr));max-width:340px;margin-left:auto;margin-right:auto}
+  .tile{max-width:150px}
+}
+
+/* Telefon */
+@media (max-width:359px){
+  .carousel{grid-template-columns:40px minmax(0,1fr) 40px;gap:6px}
+  .nav{width:40px;min-height:72px}
+}
+
+/* Tablet ve üzeri */
+@media (min-width:600px){
+  .opt-grid{grid-template-columns:1fr 1fr}
+  .home-tiles{grid-template-columns:repeat(4,96px)}
+  .home-tiles .tile{width:96px;max-width:96px}
+  .felt{padding:24px;gap:14px;border-width:12px}
+  .trow{min-width:0}
+  .teams{max-width:620px;margin-left:auto;margin-right:auto}
+}
+/* Geniş ekran */
+@media (min-width:900px){
+  .wrap{max-width:980px;padding:24px 24px 48px}
+  .hero{padding:32px 28px}
+  .pcard{min-height:380px;padding:28px 24px}
+  .nav{min-height:110px}
+  .modal{align-items:center}
+  .sheet{max-width:720px;height:auto;max-height:90vh;border-radius:22px;border:2px solid rgba(247,216,119,.4);padding:24px}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>101 Okey</h1>
+      <span aria-hidden="true"><i style="--c:#e0b400;--r:-8deg"></i><i style="--c:#2f6fc2;--r:-3deg"></i><i style="--c:#2b2b2b;--r:3deg"></i><i style="--c:#c8372d;--r:8deg"></i></span>
     </div>
+    <span id="sub" class="muted"></span>
+  </header>
 
-    <section class="about">
-      <p class="big">
-        Arkamda dijital ya da fiziksel bir kütüphane bırakacağım. Bunun yolu;
-        öğrenmek, üretmek ve paylaşmaktan geçiyor.
-      </p>
-      <div>
-        <p class="label">Beceriler</p>
-        <ul class="skills">
-          <li>HTML <span>orta</span></li>
-          <li>CSS <span>orta</span></li>
-          <li>JavaScript <span>öğreniyor</span></li>
-          <li>Java <span>öğreniyor</span></li>
-        </ul>
+  <!-- ANA EKRAN -->
+  <section id="home" class="screen" hidden>
+    <div class="card hero">
+      <h2>Masa hazır mı?</h2>
+      <p class="muted">Dört kişilik 101 Okey skorlarını bu cihazda tut.</p>
+      <div class="home-tiles grp">
+        <div class="tile" style="--c:#e0b400;--ink:#b08600"><span class="tname">Sarı</span><span class="tx">×3</span><span class="tbar"></span></div>
+        <div class="tile" style="--c:#c8372d;--ink:#c8372d"><span class="tname">Kırmızı</span><span class="tx">×4</span><span class="tbar"></span></div>
+        <div class="tile" style="--c:#2b2b2b;--ink:#2b2b2b"><span class="tname">Siyah</span><span class="tx">×5</span><span class="tbar"></span></div>
+        <div class="tile" style="--c:#2f6fc2;--ink:#2f6fc2"><span class="tname">Mavi</span><span class="tx">×6</span><span class="tbar"></span></div>
       </div>
-    </section>
+      <div><button id="btnMasaKur" class="big">Masa kur</button></div>
+    </div>
+    <div class="card hist">
+      <h3 class="sec">Son masalar</h3>
+      <div id="histCard"></div>
+    </div>
+  </section>
 
-    <section>
-      <p class="label">Hikayem</p>
-      <p class="story reveal">
-        Yazılım geliştirme ile tanışmam mevcut uygulamaları yeniden tasarlayıp
-        onları baştan inşa etmekle başladı. Yaptıklarımda kendi izimi görmek
-        beni çok heyecanlandırır, çünkü farklı olmayı seviyorum. Tarzımı
-        yansıtan işler yapmak ve bu alanlarda kendimin en iyisi olmayı
-        hedefliyorum.
-      </p>
-    </section>
+  <!-- KURULUM 1: TÜR -->
+  <section id="wizMode" class="screen" hidden>
+    <div class="bar"><button class="ghost" data-go="home">← Geri</button><h2>Oyun türü</h2></div>
+    <div class="opt-grid grp">
+      <button class="opt" data-mode="single"><b>Tekli</b><small>Herkes kendi puanını alır.</small></button>
+      <button class="opt" data-mode="pair"><b>Eşli</b><small>Karşılıklı oyuncular eş olur, puanları toplanır.</small></button>
+    </div>
+  </section>
 
-    <section>
-      <p class="label">Öğrenme yolculuğum</p>
-      <div class="timeline">
-        <div class="step reveal">
-          <h4>Kişiselleştirerek başladım</h4>
-          <p>
-            Var olan uygulamaları olduğu gibi kullanmak yerine değiştirip
-            geliştirerek HTML ve CSS öğrendim.
-          </p>
-        </div>
-        <div class="step reveal">
-          <h4>Web geliştirme</h4>
-          <p>
-            Projelerde sadece hazır siteler değil, kendi imzamı taşıyan işler
-            yapmaya odaklandım.
-          </p>
-        </div>
-        <div class="step reveal">
-          <h4>Üniversite</h4>
-          <p>
-            Üniversitede derslerle birlikte yazılıma daha disiplinli ve
-            istikrarlı şekilde devam ediyorum.
-          </p>
-        </div>
-        <div class="step reveal">
-          <h4>Sırada Python ve SQL</h4>
-          <p>
-            Yolculuğum burada bitmiyor. Sırada Python ve SQL ile veriye ve
-            veritabanlarına girmek var, ama asıl hedefim bunların ötesinde daha
-            büyük işler.
-          </p>
-        </div>
-      </div>
-    </section>
+  <!-- KURULUM 2: İSİM / NUMARA -->
+  <section id="wizNames" class="screen" hidden>
+    <div class="bar"><button class="ghost" data-go="wizMode">← Geri</button><h2>Oyuncu adları</h2></div>
+    <div class="opt-grid grp">
+      <button class="opt" data-nm="real"><b>İsimle</b><small>Her oyuncunun adını kendin gir.</small></button>
+      <button class="opt" data-nm="num"><b>Oyuncu 1-4</b><small>Adlar Oyuncu 1, 2, 3, 4 olarak kalır.</small></button>
+    </div>
+  </section>
 
-    <section>
-      <p class="label">İlgi alanlarım</p>
-      <div class="tags interests reveal">
-        <span>Yazılım geliştirme</span>
-        <span>Psikoloji</span>
-        <span>Kişisel gelişim</span>
-        <span>Spor</span>
-        <span>Finans</span>
-      </div>
-    </section>
+  <!-- KURULUM 3: MASA -->
+  <section id="wizSeats" class="screen" hidden>
+    <div class="bar"><button class="ghost" data-go="wizNames">← Geri</button><h2>Masa</h2></div>
+    <p id="seatHint" class="muted hint"></p>
+    <div class="felt grp">
+      <div class="seat s-top"><span class="pos">↑ Karşı</span><input id="s2" type="text" maxlength="18"></div>
+      <div class="seat s-left"><span class="pos">← Sol</span><input id="s3" type="text" maxlength="18"></div>
+      <div class="felt-mid">⟲<small>Oyun yönü</small></div>
+      <div class="seat s-right"><span class="pos">Sağ →</span><input id="s1" type="text" maxlength="18"></div>
+      <div class="seat s-bottom"><span class="pos">↓ Sen</span><input id="s0" type="text" maxlength="18"></div>
+    </div>
+    <p id="seatErr" class="err"></p>
+    <div class="btns"><button id="seatNext">İleri</button></div>
+  </section>
 
-    <section class="contact" id="contact">
-      <p class="label">İletişim</p>
-      <a class="mail" href="mailto:bora.webcode@gmail.com"
-        >bora.webcode@gmail.com</a
-      >
-    </section>
+  <!-- OYUN EKRANI: SKOR TABLOSU -->
+  <section id="board" class="screen" hidden>
+    <div id="status" class="status"></div>
+    <div id="boardActions" class="actions"></div>
+    <div id="scoreCard" class="card"></div>
+  </section>
+</main>
 
-    <footer>
-      <span>© 2026 Latif Can BORA</span>
-    </footer>
+<!-- MODAL -->
+<div id="modal" class="modal" hidden>
+  <div id="sheet" class="sheet"></div>
+</div>
 
-    <script>
-      /* ===== 1. Proje verisi: yeni proje eklemek için bu listeye kopyala-yapıştır yap ===== */
-      const projects = [
-        {
-          title: "Bütçe Takibi",
-          description:
-            "Gelir, gider ve kredi kartı limitlerini takip eden, grafikli bütçe uygulaması.",
-          tags: ["HTML", "CSS", "JavaScript", "Firebase"],
-          demo: "https://l-bora.github.io/BudgetTracking",
-        },
-        {
-          title: "FOCUS",
-          description:
-            "Gün boyu vakit ayırdığınız işlere harcadığınız süreyi takip edin ve kendinize yapılacaklar listesi oluşturup zamanınızı siz yönetin.",
-          tags: ["HTML", "CSS", "JavaScript", "Firebase"],
-          demo: "https://l-bora.github.io/StudyTracker/",
-        },
-        {
-         title: "Skor Tablosu",
-          description:
-            " Sevdiklerinizle 101 okey oynarken kalem kağıda ve matematik becerinizi konuşturmanıza gerek kalmadan skoru takip edebileceğiniz bir uygulama. ",
-          tags: ["HTML", "CSS", "JavaScript",],
-          demo: "https://l-bora.github.io/SkorTablosu/",
-        },
-        {
-          title: "FUENTE",
-          description:
-            "Bir restoran için tasarlanmış, sade ve düzenli tanıtım sitesi.",
-          tags: ["HTML", "CSS"],
-          demo: "https://l-bora.github.io/fuente",
-        },
-        {
-          title: "Gravity World",
-          description:
-            "3D dünya üzerinde ülkelerin yerçekimi değerini gösteren etkileşimli site.",
-          tags: ["HTML", "CSS", "JavaScript", "Three.js"],
-          demo: "https://l-bora.github.io/dunyaYercekimiCalismasi",
-        },
-        {
-          title: "Gravity Solar",
-          description:
-            "3D güneş sistemi üzerinde ülkelerin ve diğer gezegenlerin yerçekimi değerini gösteren etkileşimli site.",
-          tags: ["HTML", "CSS", "JavaScript", "Three.js"],
-          demo: " https://l-bora.github.io/gunesSistemi/",
-        },
-        {
-          title: "Asansör Fiziği",
-          description:
-            "Asansörde hareket eden bir nesnenin ivmeye bağlı görünür ağırlık değişimini gösteren simülasyon.",
-          tags: ["HTML", "CSS", "JavaScript"],
-          demo: "https://l-bora.github.io/elevator/",
-        },
-      ];
+<script>
+// ---- Sabitler ----
+const COLORS = [
+  { n: 'Sarı',    k: 3, c: '#e0b400', ink: '#b08600' },
+  { n: 'Kırmızı', k: 4, c: '#c8372d', ink: '#c8372d' },
+  { n: 'Siyah',   k: 5, c: '#2b2b2b', ink: '#2b2b2b' },
+  { n: 'Mavi',    k: 6, c: '#2f6fc2', ink: '#2f6fc2' }
+];
+const POS = ['Sen', 'Sağ', 'Karşı', 'Sol']; // koltuk sırası 0,1,2,3
+const ARROW = ['↓', '→', '↑', '←'];         // koltuğun masadaki yönü
+const PLACE = ['altta', 'sağda', 'karşıda', 'solda'];
+const KEY = 'okey101-v1';                  // devam eden masa
+const KEY_HIST = 'okey101-history';        // kaydedilmiş masalar (en fazla 3)
+const HIST_MAX = 3;
+const STEP = 0.45;                         // öğeler arası animasyon gecikmesi (sn)
 
-      /* ===== 2. Projeleri sayfaya yazdır ===== */
-      const track = document.getElementById("project-list");
-      const viewport = document.getElementById("viewport");
-      const pips = document.getElementById("pips");
-      const prevBtn = document.getElementById("prev");
-      const nextBtn = document.getElementById("next");
-      let current = 0;
+// ---- Yardımcılar ----
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmtDate = iso => new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-      // Her projenin kart içeriği (karusel ve tüm projeler ekranında aynı)
-      function cardHTML(p) {
-        return `
-        <h3>${p.title}</h3>
-        <p>${p.description}</p>
-        <div class="tags">${p.tags.map((t) => `<span>${t}</span>`).join("")}</div>
-        <a class="demo-btn" href="${p.demo}" target="_blank" rel="noopener">Uygulamayı çalıştır</a>
-      `;
-      }
+// ---- Durum ----
+let game = loadGame();   // { mode, names[4], rounds[], inRound }
+let draft = null;        // açık tur formunun verisi
+let stack = [];          // modal içindeki adımlar (Geri için)
+let editIdx = null;      // düzenlenen turun indeksi (null = yeni tur)
+let wiz = { mode: 'single', nm: 'real' };
 
-      projects.forEach((p, i) => {
-        // Karusel kartı
-        const card = document.createElement("article");
-        card.className = "card";
-        card.innerHTML = cardHTML(p);
-        card.addEventListener("click", (e) => {
-          if (e.target.closest("a")) return; // demo linki kendi işini yapsın
-          goTo(i);
-        });
-        track.appendChild(card);
+function loadGame() {
+  try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; }
+  catch (e) { return null; }
+}
+function saveGame() {
+  try { localStorage.setItem(KEY, JSON.stringify(game)); }
+  catch (e) { /* kaydedilemedi: uygulama yine çalışır */ }
+}
+function loadHistory() {
+  try { const raw = localStorage.getItem(KEY_HIST); return raw ? JSON.parse(raw) : []; }
+  catch (e) { return []; }
+}
+function saveHistory(list) {
+  try { localStorage.setItem(KEY_HIST, JSON.stringify(list)); }
+  catch (e) { /* kaydedilemedi */ }
+}
 
-        // Alttaki nokta
-        const pip = document.createElement("button");
-        pip.className = "pip";
-        pip.setAttribute("aria-label", p.title);
-        pip.addEventListener("click", () => goTo(i));
-        pips.appendChild(pip);
-      });
+// ---- Animasyon: .grp içindeki öğeler sırayla düşer ----
+function playIntro(root) {
+  root.querySelectorAll('.grp').forEach(g => {
+    [...g.children].forEach((c, k) => c.style.setProperty('--d', (k * STEP).toFixed(2) + 's'));
+    clearTimeout(g._t);
+    if (reduced()) { g.classList.remove('intro'); return; }
+    g.classList.add('intro');
+    g._t = setTimeout(() => g.classList.remove('intro'), (g.children.length - 1) * STEP * 1000 + 750);
+  });
+}
 
-      // Aktif kartı ekranın ortasına getir
-      function goTo(i) {
-        current = Math.max(0, Math.min(i, projects.length - 1));
-        track
-          .querySelectorAll(".card")
-          .forEach((c, idx) => c.classList.toggle("active", idx === current));
-        pips
-          .querySelectorAll(".pip")
-          .forEach((p, idx) => p.classList.toggle("active", idx === current));
-        prevBtn.disabled = current === 0;
-        nextBtn.disabled = current === projects.length - 1;
-        layout();
-      }
+// ---- Puan hesabı (kurallara göre) ----
+// d.finisher: eli bitiren indeks (null = kimse bitmedi)
+// d.okey: dışarı veya çift ise true
+function computeRound(d) {
+  const anyOpen = d.opened.some(Boolean);
+  const finished = d.finisher !== null;
+  const mult = (finished && !anyOpen ? 2 : 1) * (d.okey ? 2 : 1) * COLORS[d.color].k;
+  const base = [0, 1, 2, 3].map(i => {
+    if (i === d.finisher) return -200;           // eli bitiren
+    if (!d.opened[i]) return 200;                // hiç açamayıp taşları elinde kalan
+    return Number(d.rack[i]) || 0;               // açan: ıstakadaki taşların toplamı
+  });
+  return { mult, scores: base.map(b => b * mult) };
+}
 
-      // Ekran genişliğine göre kart boyutlarını ve kaydırmayı hesapla
-      function layout() {
-        const vw = viewport.clientWidth;
-        const firstCard = track.querySelector(".card");
-        if (!firstCard) return;
-        // Kart genişliği CSS'ten gelir, burada sadece ölçülür
-        const cw = firstCard.offsetWidth;
-        const gap = vw * 0.04;
-        track.style.gap = gap + "px";
-        const offset = vw / 2 - cw / 2 - current * (cw + gap);
-        track.style.transform = `translateX(${offset}px)`;
-      }
+// Bir masanın toplamları ve sıralaması
+function totalsOf(g) {
+  return [0, 1, 2, 3].map(i => g.rounds.reduce((s, r) => s + r.scores[i], 0));
+}
+function rankRows(g) {
+  const totals = totalsOf(g);
+  let rows;
+  if (g.mode === 'pair') {
+    rows = [[0, 2], [1, 3]].map(t => ({ label: `${esc(g.names[t[0]])} &amp; ${esc(g.names[t[1]])}`, score: totals[t[0]] + totals[t[1]] }));
+  } else {
+    rows = g.names.map((n, i) => ({ label: esc(n), score: totals[i] }));
+  }
+  rows.sort((a, b) => a.score - b.score);
+  const tie = rows.length > 1 && rows[0].score === rows[1].score;
+  return { rows, tie };
+}
 
-      prevBtn.addEventListener("click", () => goTo(current - 1));
-      nextBtn.addEventListener("click", () => goTo(current + 1));
-      window.addEventListener("resize", layout);
-      window.addEventListener("load", layout);
+// ---- Ekranlar ----
+function showScreen(id) {
+  ['home', 'wizMode', 'wizNames', 'wizSeats', 'board'].forEach(s => { $(s).hidden = s !== id; });
+  if (id === 'home') renderHome();
+  if (id === 'wizSeats') syncSeats();
+  if (id === 'board') renderBoard();
+  playIntro($(id));
+}
+function render() {
+  showScreen(game ? 'board' : 'home');
+}
 
-      // Telefonda parmakla sağa sola kaydırma
-      let touchStartX = 0;
-      viewport.addEventListener(
-        "touchstart",
-        (e) => {
-          touchStartX = e.touches[0].clientX;
-        },
-        { passive: true },
-      );
-      viewport.addEventListener("touchend", (e) => {
-        const dx = e.changedTouches[0].clientX - touchStartX;
-        if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
-      });
+function renderHome() {
+  const hist = loadHistory();
+  $('histCard').innerHTML = hist.length
+    ? `<div class="plist">${hist.map((rec, i) => {
+        const { rows } = rankRows(rec);
+        return `<button class="prow-btn" data-hist="${i}">
+          <span>${fmtDate(rec.date)}<small>${rec.mode === 'pair' ? 'Eşli' : 'Tekli'} · ${rec.rounds.length} tur</small></span>
+          <span class="st">${rows[0].label}<br>${rows[0].score}</span>
+        </button>`;
+      }).join('')}</div>`
+    : '<p class="muted">Henüz kaydedilmiş masa yok.</p>';
+}
+$('histCard').addEventListener('click', e => {
+  const b = e.target.closest('[data-hist]');
+  if (b) openHistView(Number(b.dataset.hist));
+});
 
-      // Klavyede sol/sağ ok tuşları
-      document.addEventListener("keydown", (e) => {
-        if (overlay.classList.contains("open")) return;
-        if (e.key === "ArrowLeft") goTo(current - 1);
-        if (e.key === "ArrowRight") goTo(current + 1);
-      });
+function renderBoard() {
+  const r = game.inRound;
+  $('sub').textContent = (game.mode === 'pair' ? 'Eşli' : 'Tekli') + ' · ' + game.rounds.length + ' tur';
 
-      // Tüm projeler ekranı
-      const overlay = document.getElementById("overlay");
-      const allGrid = document.getElementById("all-grid");
+  if (r) {
+    const c = COLORS[r.color];
+    $('status').innerHTML = `<span class="mini" style="--c:${c.c};--ink:${c.ink}">×${c.k}<small>${c.n}</small></span>
+      <span>${game.rounds.length + 1}. tur devam ediyor · Okey: ${c.n}</span>`;
+  } else {
+    $('status').textContent = "Yeni tur için Başla'ya bas.";
+  }
 
-      projects.forEach((p) => {
-        const card = document.createElement("article");
-        card.className = "card static";
-        card.innerHTML = cardHTML(p);
-        allGrid.appendChild(card);
-      });
+  let acts = '';
+  if (!r) {
+    acts += '<button class="big" data-act="start">Başla</button>';
+    if (game.rounds.length) {
+      acts += '<button class="ghost" data-act="edit">Düzenle</button>';
+      acts += '<button class="ghost" data-act="end">Bitir</button>';
+    }
+  } else {
+    acts += '<button data-act="finish">Eli bitir ve skorları kaydet</button>';
+    acts += '<button class="ghost" data-act="change">Okey rengini tekrar seç</button>';
+    acts += '<button class="danger" data-act="leave">Masadan ayrıl</button>';
+  }
+  $('boardActions').innerHTML = acts;
+  $('scoreCard').innerHTML = boardHTML(game);
+}
 
-      function openAll() {
-        overlay.classList.add("open");
-        overlay.setAttribute("aria-hidden", "false");
-      }
+// Skor tablosu (devam eden masa ya da kayıtlı masa için)
+function boardHTML(g) {
+  const names = g.names;
+  const totals = totalsOf(g);
+  const isPair = g.mode === 'pair';
+  const teams = [[0, 2], [1, 3]];
+  const teamTotals = teams.map(t => totals[t[0]] + totals[t[1]]);
+  const minVal = isPair ? Math.min(...teamTotals) : Math.min(...totals);
 
-      function closeAll() {
-        overlay.classList.remove("open");
-        overlay.setAttribute("aria-hidden", "true");
-      }
+  let h = '<div class="table">';
+  h += '<div class="trow thead"><div>Tur</div>' +
+       [0, 1, 2, 3].map(i => `<div><small>${POS[i]}</small>${esc(names[i])}</div>`).join('') + '</div>';
+  g.rounds.forEach((r, idx) => {
+    h += `<div class="trow"><div>${idx + 1}<small>${COLORS[r.color].n} ×${r.mult}</small></div>` +
+         r.scores.map(s => `<div class="${s < 0 ? 'neg' : ''}">${s}</div>`).join('') + '</div>';
+  });
+  h += '<div class="trow total"><div>Toplam</div>' +
+       totals.map((t, i) => `<div class="${!isPair && t === minVal ? 'lead' : ''}">${t}</div>`).join('') + '</div>';
+  h += '</div>';
 
-      document.getElementById("open-all").addEventListener("click", openAll);
-      document.getElementById("close").addEventListener("click", closeAll);
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeAll();
-      });
+  if (isPair) {
+    h += '<div class="teams">' + teams.map((t, i) =>
+      `<div class="team ${teamTotals[i] === minVal ? 'lead' : ''}">${esc(names[t[0]])} &amp; ${esc(names[t[1]])}<b>${teamTotals[i]}</b></div>`
+    ).join('') + '</div>';
+  }
+  if (!g.rounds.length) h += '<p class="muted">Henüz tur kaydedilmedi.</p>';
+  return h;
+}
 
-      goTo(0);
+// ---- Kurulum sihirbazı ----
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-go]');
+  if (b) showScreen(b.dataset.go);
+});
+$('btnMasaKur').addEventListener('click', () => showScreen('wizMode'));
+$('wizMode').addEventListener('click', e => {
+  const b = e.target.closest('[data-mode]');
+  if (b) { wiz.mode = b.dataset.mode; showScreen('wizNames'); }
+});
+$('wizNames').addEventListener('click', e => {
+  const b = e.target.closest('[data-nm]');
+  if (b) { wiz.nm = b.dataset.nm; showScreen('wizSeats'); }
+});
 
-      /* ===== 3. Projeler kaydırınca belirsin ===== */
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("visible");
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.2 },
-      );
+function syncSeats() {
+  const num = wiz.nm === 'num';
+  for (let i = 0; i < 4; i++) {
+    const inp = $('s' + i);
+    if (num) {
+      inp.value = 'Oyuncu ' + (i + 1);
+      inp.disabled = true;
+    } else {
+      inp.disabled = false;
+      if (/^Oyuncu \d$/.test(inp.value)) inp.value = '';
+      inp.placeholder = 'İsim';
+    }
+  }
+  $('seatHint').textContent = wiz.mode === 'pair'
+    ? 'Eşler: Sen & Karşı, Sağ & Sol. Eşlerin puanları toplanır.'
+    : 'Her oyuncu kendi puanını alır.';
+  $('seatErr').textContent = '';
+}
 
-      document
-        .querySelectorAll(".project, .reveal")
-        .forEach((el) => observer.observe(el));
+$('seatNext').addEventListener('click', () => {
+  const names = [0, 1, 2, 3].map(i => $('s' + i).value.trim());
+  if (names.some(n => !n)) { $('seatErr').textContent = 'Dört oyuncunun da adını gir.'; return; }
+  if (new Set(names).size < 4) { $('seatErr').textContent = 'Aynı isimden iki tane olamaz.'; return; }
+  game = { mode: wiz.mode, names, rounds: [], inRound: null };
+  saveGame();
+  render();
+});
 
-      /* ===== 4. Başlığı harf harf böl (animasyon için) ===== */
-      const title = document.getElementById("title");
-      let charIndex = 0;
+// ---- Tablo düğmeleri ----
+$('boardActions').addEventListener('click', e => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  const a = b.dataset.act;
+  if (a === 'start') openStart();
+  else if (a === 'finish') openFinisher();
+  else if (a === 'end') openFinishWarn();
+  else if (a === 'edit') openEditList();
+  else if (a === 'change') openChangeInfo();
+  else if (a === 'leave') openLeave();
+});
 
-      // Her kelimeyi ayrı bir kutuya al, harfleri de tek tek sar
-      title.innerHTML = title.innerHTML
-        .split("<br>")
-        .map((word) => {
-          const chars = [...word.trim()]
-            .map((ch) => {
-              const span = `<span class="char" style="--i:${charIndex}">${ch === " " ? "&nbsp;" : ch}</span>`;
-              charIndex++;
-              return span;
-            })
-            .join("");
-          return `<span class="word">${chars}</span>`;
-        })
-        .join("<br>");
+// ---- Modal yönetimi ----
+function go(fn) {
+  $('modal').hidden = false;
+  stack.push(fn);
+  fn();
+}
+function back() {
+  stack.pop();
+  const prev = stack[stack.length - 1];
+  if (prev) prev();
+  else closeModal();
+}
+function closeModal() {
+  $('modal').hidden = true;
+  $('sheet').innerHTML = '';
+  draft = null;
+  editIdx = null;
+  stack = [];
+}
+const bar = title => `<div class="bar"><button class="ghost" data-back>← Geri</button><h2>${title}</h2></div>`;
 
-      /* ===== 5. Arka plan noktaları: fare yaklaşınca itilirler ===== */
-      // ===== Yerçekimi alanı arka planı =====
-      // Her çizgi, o noktadaki çekim kuvvetinin yönünü gösterir.
-      // Fare ve arka plandaki görünmez gezegenler kütle gibi davranır.
-      // ===== Yerçekimi alanı arka planı =====
-      // Her çizgi, o noktadaki iki görünmez kütlenin çekim yönünü gösterir.
-      // Fare ve dokunma bu alanı etkilemez.
-      const canvas = document.getElementById("dots");
-      const ctx = canvas.getContext("2d");
-      const INK = "236, 235, 230"; // --ink rengiyle aynı tutulmalı
-      let width, height, spacingPx;
-      let nodes = [];
-      const field = { fx: 0, fy: 0, s: 0 };
+// Okey rengi (başlangıç ya da değiştirme)
+function openStart() { stack = []; go(renderColor); }
+function openChangeInfo() { stack = []; go(renderChangeInfo); }
+function renderChangeInfo() {
+  $('sheet').innerHTML = bar('Okey rengini tekrar seç') + `
+    <div class="card">
+      <p>Bu turun okey rengi değişecek.</p>
+      <p class="muted">Tur baştan başlamaz, devam eder. Kayıtlı turlar etkilenmez. Bu turun puanları yeni renge göre çarpılır.</p>
+    </div>
+    <div class="btns">
+      <button class="ghost" data-close>Vazgeç</button>
+      <button id="changeNext">Yeni rengi seç</button>
+    </div>`;
+}
+function renderColor() {
+  $('sheet').innerHTML = bar('Okey rengi hangisi?') + `
+    <p class="muted">Puanlar tur sonunda bu renge göre çarpılır.</p>
+    <div class="tiles grp">
+      ${COLORS.map((c, i) => `
+        <button class="tile" data-color="${i}" style="--c:${c.c};--ink:${c.ink}">
+          <span class="tname">${c.n}</span>
+          <span class="tx">×${c.k}</span>
+          <span class="tbar"></span>
+        </button>`).join('')}
+    </div>`;
+  playIntro($('sheet'));
+}
 
-      // Ekrandaki iki kütle (oranla konumlanır, yavaşça dolaşır)
-      const planets = [
-        { fx: 0.3, fy: 0.4, mass: 3000, phase: 0 },
-        { fx: 0.72, fy: 0.62, mass: 2200, phase: 2.5 },
-      ];
+// Masadan ayrıl (kayıt tutulmaz)
+function openLeave() { stack = []; go(renderLeave); }
+function renderLeave() {
+  $('sheet').innerHTML = bar('Masadan ayrıl') + `
+    <div class="card">
+      <p>Masadan ayrılırsan devam eden tur iptal olur.</p>
+      <p>Bu masa kaydedilmeden silinir ve ana ekrana dönersin.</p>
+      <p class="muted">Bu işlem geri alınamaz.</p>
+    </div>
+    <div class="btns">
+      <button class="ghost" data-close>Vazgeç</button>
+      <button class="danger" id="leaveYes">Evet, masadan ayrıl</button>
+    </div>`;
+}
 
-      function planetPos(p, t) {
-        return {
-          x: (p.fx + Math.sin(t * 0.15 + p.phase) * 0.1) * width,
-          y: (p.fy + Math.cos(t * 0.11 + p.phase) * 0.1) * height,
-        };
-      }
+// Bitir: uyarı, onay, sonra masa kaydedilir
+function openFinishWarn() { stack = []; go(renderFinishWarn); }
+function renderFinishWarn() {
+  $('sheet').innerHTML = bar('Masayı bitir') + `
+    <div class="card">
+      <p><b>Bitir'e basarsan artık bu masada yeni el başlatamazsın.</b></p>
+      <p>Masa kaydedilip ana menüye döneceksin. Son 3 masa bu cihazda saklanır.</p>
+    </div>
+    <div class="btns">
+      <button class="ghost" data-close>Vazgeç</button>
+      <button id="finishYes">Bitir ve kaydet</button>
+    </div>`;
+}
+function finishTable() {
+  const rec = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    mode: game.mode,
+    names: game.names,
+    rounds: game.rounds
+  };
+  saveHistory([rec, ...loadHistory()].slice(0, HIST_MAX));
+  game = null;
+  saveGame();
+  render();   // arkada ana ekran hazır dursun
+  showResult(rec);
+}
+function showResult(rec) {
+  const { rows, tie } = rankRows(rec);
+  stack = [];
+  $('modal').hidden = false;
+  $('sheet').innerHTML = `
+    <h2>Masa kaydedildi</h2>
+    <p class="muted">${rec.rounds.length} tur oynandı.</p>
+    <p class="winner">${tie ? 'Berabere' : 'Kazanan: ' + rows[0].label}</p>
+    <div class="pv">
+      ${rows.map((r, i) => `<div class="pvr"><span>${i + 1}. ${r.label}</span><b class="${i === 0 ? 'winner' : ''}">${r.score}</b></div>`).join('')}
+    </div>
+    <div class="btns"><button id="resultHome">Ana menüye dön</button></div>`;
+}
 
-      function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-        // Küçük ekranda çizgiler daha sık
-        spacingPx = width < 720 ? 22 : width < 1200 ? 26 : 30;
-        nodes = [];
-        for (let x = spacingPx / 2; x < width + spacingPx; x += spacingPx) {
-          for (let y = spacingPx / 2; y < height + spacingPx; y += spacingPx) {
-            nodes.push({ x, y });
-          }
-        }
-      }
+// Son masalar: kayıtlı bir masayı göster
+function openHistView(i) {
+  const rec = loadHistory()[i];
+  if (!rec) return;
+  stack = [];
+  go(() => renderHistView(rec));
+}
+function renderHistView(rec) {
+  $('sheet').innerHTML = bar('Kayıtlı masa') + `
+    <p class="muted">${fmtDate(rec.date)} · ${rec.mode === 'pair' ? 'Eşli' : 'Tekli'} · ${rec.rounds.length} tur</p>
+    <div class="card">${boardHTML(rec)}</div>
+    <div class="btns"><button class="ghost" data-close>Kapat</button></div>`;
+}
 
-      // Bir noktadaki toplam çekim vektörü
-      function fieldAt(px, py, t, out) {
-        let fx = 0;
-        let fy = 0;
-        for (const p of planets) {
-          const pos = planetPos(p, t);
-          const dx = pos.x - px;
-          const dy = pos.y - py;
-          const r2 = dx * dx + dy * dy + 900; // yumuşatma
-          const r = Math.sqrt(r2);
-          const f = p.mass / r2;
-          fx += (dx / r) * f;
-          fy += (dy / r) * f;
-        }
-        out.fx = fx;
-        out.fy = fy;
-        out.s = Math.sqrt(fx * fx + fy * fy);
-        return out;
-      }
+// Düzenle: önce tur seçilir, sonra aynı tur adımlarından geçilir
+function openEditList() {
+  stack = [];
+  go(renderEditList);
+}
+function renderEditList() {
+  $('sheet').innerHTML = bar('Düzenlenecek turu seç') + `
+    <div class="plist grp">
+      ${game.rounds.map((r, i) => `
+        <button class="prow-btn" data-edit="${i}">
+          <span>${i + 1}. tur<small>${COLORS[r.color].n} ×${r.mult}</small></span>
+          <span class="st">${r.scores.join(' · ')}</span>
+        </button>`).join('')}
+    </div>`;
+  playIntro($('sheet'));
+}
+function startEdit(i) {
+  const r = game.rounds[i];
+  const hasDetail = Array.isArray(r.opened);   // eski kayıtlarda oyuncu girdileri yok
+  editIdx = i;
+  draft = {
+    color: r.color,
+    finisher: r.finisher,
+    how: r.how || null,
+    okey: !!r.how && r.how !== 'normal',
+    opened: hasDetail ? r.opened.slice() : [false, false, false, false],
+    rack: hasDetail ? r.rack.slice() : ['', '', '', ''],
+    visited: [hasDetail, hasDetail, hasDetail, hasDetail],
+    sel: 0
+  };
+  stack = [renderEditList];
+  go(renderFinisher);
+}
 
-      function draw() {
-        const t = performance.now() / 1000;
-        ctx.clearRect(0, 0, width, height);
+// Tur sonu: eli kim bitirdi → nasıl bitti → puanlar
+function openFinisher() {
+  if (!game.inRound) return;
+  editIdx = null;
+  draft = {
+    color: game.inRound.color,
+    finisher: null,
+    how: null,
+    okey: false,
+    opened: [false, false, false, false],
+    rack: ['', '', '', ''],
+    visited: [true, false, false, false], // ilk oyuncu kartta açık geliyor
+    sel: 0
+  };
+  stack = [];
+  go(renderFinisher);
+}
+function renderFinisher() {
+  const title = editIdx !== null ? `${editIdx + 1}. tur · Eli kim bitirdi?` : `${game.rounds.length + 1}. tur · Eli kim bitirdi?`;
+  const sel = (v) => (editIdx !== null && draft.finisher === v ? ' sel' : '');
+  $('sheet').innerHTML = bar(title) + `
+    <div class="opt-grid grp">
+      ${game.names.map((nm, i) => `<button class="opt${sel(i)}" data-fin="${i}"><b>${esc(nm)}</b><small>${POS[i]}</small></button>`).join('')}
+      <button class="opt wide${editIdx !== null && draft.finisher === null ? ' sel' : ''}" data-fin="none"><b>Hiç kimse bitmedi</b><small>Eli kimse bitirmediyse bu seçeneği seç.</small></button>
+    </div>`;
+  playIntro($('sheet'));
+}
+function renderHow() {
+  const sel = (v) => (editIdx !== null && draft.how === v ? ' sel' : '');
+  $('sheet').innerHTML = bar('Eli nasıl bitirdi?') + `
+    <div class="opt-grid grp">
+      <button class="opt wide${sel('normal')}" data-how="normal"><b>Normal</b><small>Okey ya da çift olmadan bitirdi.</small></button>
+      <button class="opt wide${sel('disari')}" data-how="disari"><b>Dışarı</b><small>Son taşı okeyle attı. Puanlar 2 ile çarpılır.</small></button>
+      <button class="opt wide${sel('cift')}" data-how="cift"><b>Çift</b><small>Aynı renk ve sayıdaki taşlarla per yaparak bitirdi. Dışarı gibi sayılır.</small></button>
+    </div>`;
+  playIntro($('sheet'));
+}
 
-        // Alan çizgileri
-        const L = spacingPx * 0.8;
-        ctx.lineWidth = 1;
-        for (const n of nodes) {
-          fieldAt(n.x, n.y, t, field);
-          if (field.s < 0.0004) continue;
-          const ux = field.fx / field.s;
-          const uy = field.fy / field.s;
-          const alpha = Math.min(0.8, 0.05 + field.s * 2);
-          ctx.strokeStyle = `rgba(${INK}, ${alpha})`;
-          ctx.beginPath();
-          ctx.moveTo(n.x - (ux * L) / 2, n.y - (uy * L) / 2);
-          ctx.lineTo(n.x + (ux * L) / 2, n.y + (uy * L) / 2);
-          ctx.stroke();
-        }
+function playerValid(i) {
+  const d = draft;
+  if (!d.visited[i]) return false;
+  if (i === d.finisher) return true;
+  if (!d.opened[i]) return true;
+  const v = d.rack[i];
+  return v !== '' && Number(v) >= 0;
+}
 
-        // İki kütlenin küçük noktaları
-        ctx.fillStyle = `rgba(${INK}, 0.6)`;
-        for (const p of planets) {
-          const pos = planetPos(p, t);
-          ctx.beginPath();
-          ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
+// Puan ekranı: ortada tek oyuncu kartı, ok ve kaydırma ile geçiş
+function renderScore() {
+  $('sheet').innerHTML = bar(editIdx !== null ? `${editIdx + 1}. turu düzenle` : 'Tur puanları') + `
+    <p class="muted mult" id="multLine"></p>
+    <div class="carousel">
+      <button class="nav" data-nav="-1" aria-label="Önceki oyuncu">‹</button>
+      <div class="stage" id="stage"></div>
+      <button class="nav" data-nav="1" aria-label="Sonraki oyuncu">›</button>
+    </div>
+    <div class="dots" id="dots">
+      ${[0, 1, 2, 3].map(i => `<button class="dot2" data-go-p="${i}" aria-label="${esc(game.names[i])}"></button>`).join('')}
+    </div>
+    <p class="muted swipe-hint">Kaydırarak ya da okla diğer oyuncuya geç.</p>
+    <div class="btns sticky"><button id="btnSaveRound" disabled>${editIdx !== null ? 'Değişikliği kaydet' : 'Skorları kaydet'}</button></div>`;
+  wireSwipe();
+  refreshCarousel(0);
+}
 
-        requestAnimationFrame(draw);
-      }
+function cardHTML() {
+  const d = draft;
+  const i = d.sel;
+  const r = computeRound(d);
+  const ok = playerValid(i);
+  const sc = ok ? r.scores[i] : '—';
+  return `
+    <div class="pcard" data-card="${i}">
+      <div class="pc-arrow">${ARROW[i]}</div>
+      <div class="pc-name">${esc(game.names[i])}</div>
+      ${d.finisher === i ? '<div class="pc-note">Eli bitirdiği için −200</div>' : ''}
+      <label class="pc-toggle"><input type="checkbox" data-open="${i}" ${d.opened[i] ? 'checked' : ''}><span>Per açtı</span></label>
+      ${d.opened[i] && d.finisher !== i ? `
+        <label class="pc-field"><span>Istakada kalan taşların toplamı</span>
+          <input type="number" inputmode="numeric" min="0" max="999" placeholder="0" data-rack value="${esc(d.rack[i])}">
+        </label>` : ''}
+      <div class="pc-score"><span>Bu tur</span><b id="pcScore" class="${ok && sc < 0 ? 'neg' : ''}">${sc}</b></div>
+    </div>`;
+}
 
-      window.addEventListener("resize", resize);
+// Kartı yeniden çizer; yön verilirse kayma animasyonu oynar
+function refreshCarousel(dir) {
+  const st = $('stage');
+  st.innerHTML = cardHTML();
+  if (dir) st.firstElementChild.classList.add(dir > 0 ? 'from-r' : 'from-l');
+  document.querySelectorAll('.dot2').forEach((el, i) => {
+    el.classList.toggle('on', i === draft.sel);
+    el.classList.toggle('ok', playerValid(i));
+  });
+  updateScoreUI();
+}
 
-      resize();
-      draw();
-    </script>
-  </body>
+function moveTo(i, dir) {
+  draft.sel = i;
+  draft.visited[i] = true;
+  refreshCarousel(dir);
+}
+function step(dir) {
+  moveTo((draft.sel + dir + 4) % 4, dir);
+}
+
+// Parmakla kaydırma (inputa dokunulduysa sayılmaz)
+function wireSwipe() {
+  const st = $('stage');
+  let x0 = null;
+  st.addEventListener('touchstart', e => {
+    x0 = e.target.closest('input') ? null : e.touches[0].clientX;
+  }, { passive: true });
+  st.addEventListener('touchend', e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+  });
+}
+
+// Yazarken sadece sayıları günceller; klavye açık kalsın diye kartı yeniden çizmez
+function updateScoreUI() {
+  const d = draft;
+  const r = computeRound(d);
+  const anyOpen = d.opened.some(Boolean);
+  const notes = [
+    d.finisher !== null && !anyOpen && 'kimse açmadı ×2',
+    d.okey && (d.how === 'cift' ? 'çift ×2' : 'dışarı ×2'),
+    `${COLORS[d.color].n} ×${COLORS[d.color].k}`
+  ].filter(Boolean).join(' · ');
+  $('multLine').textContent = `Çarpan ×${r.mult} (${notes})`;
+
+  const ps = $('pcScore');
+  if (ps) {
+    const ok = playerValid(d.sel);
+    ps.textContent = ok ? r.scores[d.sel] : '—';
+    ps.className = ok && r.scores[d.sel] < 0 ? 'neg' : '';
+  }
+  document.querySelectorAll('.dot2').forEach((el, i) => el.classList.toggle('ok', playerValid(i)));
+  $('btnSaveRound').disabled = ![0, 1, 2, 3].every(playerValid);
+}
+
+// Yeni turu ekler ya da düzenlenen turun yerine yazar
+function saveRound() {
+  if (![0, 1, 2, 3].every(playerValid)) return;
+  const r = computeRound(draft);
+  const round = {
+    color: draft.color,
+    finisher: draft.finisher,
+    how: draft.how,
+    okey: draft.okey,
+    opened: draft.opened.slice(),
+    rack: draft.rack.slice(),
+    mult: r.mult,
+    scores: r.scores
+  };
+  if (editIdx !== null) {
+    game.rounds[editIdx] = round;
+  } else {
+    game.rounds.push(round);
+    game.inRound = null;
+  }
+  saveGame();
+  closeModal();
+  render();
+}
+
+// ---- Modal içi tıklamalar ----
+$('sheet').addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('[data-back]')) { back(); return; }
+  if (t.closest('[data-close]')) { closeModal(); return; }
+  if (t.closest('#resultHome')) { closeModal(); render(); return; }
+  if (t.closest('#finishYes')) { finishTable(); return; }
+
+  const color = t.closest('[data-color]');
+  if (color) {
+    game.inRound = { color: Number(color.dataset.color) };
+    saveGame();
+    closeModal();
+    render();
+    return;
+  }
+  if (t.closest('#changeNext')) { go(renderColor); return; }
+  if (t.closest('#leaveYes')) {
+    game = null;
+    saveGame();
+    closeModal();
+    render();
+    return;
+  }
+
+  const edit = t.closest('[data-edit]');
+  if (edit) { startEdit(Number(edit.dataset.edit)); return; }
+
+  const fin = t.closest('[data-fin]');
+  if (fin) {
+    const v = fin.dataset.fin;
+    draft.finisher = v === 'none' ? null : Number(v);
+    if (draft.finisher === null) { draft.how = null; draft.okey = false; go(renderScore); }
+    else go(renderHow);
+    return;
+  }
+
+  const how = t.closest('[data-how]');
+  if (how) {
+    draft.how = how.dataset.how;
+    draft.okey = draft.how !== 'normal';
+    go(renderScore);
+    return;
+  }
+
+  const nav = t.closest('[data-nav]');
+  if (nav) { step(Number(nav.dataset.nav)); return; }
+
+  const dot = t.closest('[data-go-p]');
+  if (dot) {
+    const i = Number(dot.dataset.goP);
+    moveTo(i, i > draft.sel ? 1 : -1);
+    return;
+  }
+
+  const save = t.closest('#btnSaveRound');
+  if (save && !save.disabled) saveRound();
+});
+
+// Kart içindeki değişiklikler
+$('sheet').addEventListener('input', e => {
+  if (draft && e.target.matches('[data-rack]')) {
+    draft.rack[draft.sel] = e.target.value;
+    updateScoreUI();
+  }
+});
+$('sheet').addEventListener('change', e => {
+  if (draft && e.target.matches('[data-open]')) {
+    draft.opened[draft.sel] = e.target.checked;
+    refreshCarousel(0);
+  }
+});
+
+// ---- Başlangıç ----
+syncSeats();
+render();
+</script>
+</body>
 </html>
